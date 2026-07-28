@@ -1,0 +1,14 @@
+services:
+  postgres:
+    image: postgres:18
+    environment:
+      POSTGRES_DB: planix
+      POSTGRES_USER: planix
+      POSTGRES_PASSWORD: planix
+    ports:
+      - "5433:5432"
+    volumes:
+      - planix_pgdata:/var/lib/postgresql
+
+volumes:
+  planix_pgdata:
