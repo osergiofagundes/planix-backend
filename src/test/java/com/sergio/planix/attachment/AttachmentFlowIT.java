@@ -10,7 +10,7 @@ import com.sergio.planix.card.dto.CardResponse;
 import com.sergio.planix.list.BoardListService;
 import com.sergio.planix.list.dto.BoardListRequest;
 import com.sergio.planix.list.dto.BoardListResponse;
-import com.sergio.planix.support.IntegrationTest;
+import com.sergio.planix.support.AuthenticatedIntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mock.web.MockMultipartFile;
@@ -22,7 +22,7 @@ import java.nio.file.Path;
 import static org.assertj.core.api.Assertions.assertThat;
 
 /** Upload/download: o arquivo vai para o disco e o banco guarda só os metadados. */
-class AttachmentFlowIT extends IntegrationTest {
+class AttachmentFlowIT extends AuthenticatedIntegrationTest {
 
     @Autowired BoardService boardService;
     @Autowired BoardListService listService;

@@ -15,7 +15,7 @@ public class StorageConfig {
     @Bean
     Path uploadDir(@Value("${planix.upload-dir}") String dir) throws IOException {
         Path path = Paths.get(dir).toAbsolutePath().normalize();
-        Files.createDirectories(path);     // cria ./uploads se não existir
+        Files.createDirectories(path);
         return path;
     }
 }

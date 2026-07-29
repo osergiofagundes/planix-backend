@@ -51,4 +51,24 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ApiError> handleMaxUploadSize(MaxUploadSizeExceededException ex, HttpServletRequest req) {
         return build(HttpStatus.PAYLOAD_TOO_LARGE, "Arquivo maior que o limite permitido", req, null);
     }
+
+    @ExceptionHandler(EmailAlreadyUsedException.class)
+    public ResponseEntity<ApiError> handleEmailAlreadyUsed(EmailAlreadyUsedException ex, HttpServletRequest req) {
+        return build(HttpStatus.CONFLICT, ex.getMessage(), req, null);
+    }
+
+    @ExceptionHandler(CrossBoardMoveException.class)
+    public ResponseEntity<ApiError> handleCrossBoardMove(CrossBoardMoveException ex, HttpServletRequest req) {
+        return build(HttpStatus.CONFLICT, ex.getMessage(), req, null);
+    }
+
+    @ExceptionHandler({InvalidCredentialsException.class, InvalidRefreshTokenException.class})
+    public ResponseEntity<ApiError> handleUnauthorized(RuntimeException ex, HttpServletRequest req) {
+        return build(HttpStatus.UNAUTHORIZED, ex.getMessage(), req, null);
+    }
+
+    @ExceptionHandler(ForbiddenException.class)
+    public ResponseEntity<ApiError> handleForbidden(ForbiddenException ex, HttpServletRequest req) {
+        return build(HttpStatus.FORBIDDEN, ex.getMessage(), req, null);
+    }
 }

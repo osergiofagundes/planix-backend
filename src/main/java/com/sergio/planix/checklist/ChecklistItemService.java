@@ -1,7 +1,8 @@
 package com.sergio.planix.checklist;
 
+import com.sergio.planix.board.BoardAccess;
 import com.sergio.planix.card.Card;
-import com.sergio.planix.card.CardRepository;
+import com.sergio.planix.card.CardAccess;
 import com.sergio.planix.checklist.dto.ChecklistItemRequest;
 import com.sergio.planix.checklist.dto.ChecklistItemResponse;
 import com.sergio.planix.common.NotFoundException;
@@ -15,25 +16,25 @@ import java.util.List;
 public class ChecklistItemService {
 
     private final ChecklistItemRepository repo;
-    private final CardRepository cardRepo;
+    private final CardAccess cardAccess;
+    private final BoardAccess boardAccess;
 
-    public ChecklistItemService(ChecklistItemRepository repo, CardRepository cardRepo) {
+    public ChecklistItemService(ChecklistItemRepository repo, CardAccess cardAccess,
+                                BoardAccess boardAccess) {
         this.repo = repo;
-        this.cardRepo = cardRepo;
+        this.cardAccess = cardAccess;
+        this.boardAccess = boardAccess;
     }
 
     @Transactional(readOnly = true)
     public List<ChecklistItemResponse> listByCard(Long cardId) {
-        if (!cardRepo.existsById(cardId)) {
-            throw new NotFoundException("Cartão %d não encontrado".formatted(cardId));
-        }
+        cardAccess.require(cardId);
         return repo.findByCardIdOrderByPositionAsc(cardId).stream()
                 .map(ChecklistItemResponse::from).toList();
     }
 
     public ChecklistItemResponse create(Long cardId, ChecklistItemRequest req) {
-        Card card = cardRepo.findById(cardId)
-                .orElseThrow(() -> new NotFoundException("Cartão %d não encontrado".formatted(cardId)));
+        Card card = cardAccess.require(cardId);
         int position = repo.countByCardId(cardId);
         return ChecklistItemResponse.from(repo.save(new ChecklistItem(card, req.text(), position)));
     }
@@ -81,7 +82,14 @@ public class ChecklistItemService {
     }
 
     private ChecklistItem findOrThrow(Long id) {
-        return repo.findById(id)
-                .orElseThrow(() -> new NotFoundException("Item de checklist %d não encontrado".formatted(id)));
+        ChecklistItem item = repo.findById(id).orElseThrow(() -> naoEncontrado(id));
+        if (!boardAccess.isMember(item.getCard().getList().getBoard().getId())) {
+            throw naoEncontrado(id);
+        }
+        return item;
+    }
+
+    private NotFoundException naoEncontrado(Long id) {
+        return new NotFoundException("Item de checklist %d não encontrado".formatted(id));
     }
 }

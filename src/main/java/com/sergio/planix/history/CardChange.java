@@ -1,5 +1,6 @@
 package com.sergio.planix.history;
 
+import com.sergio.planix.auth.User;
 import com.sergio.planix.card.Card;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -20,6 +21,10 @@ public class CardChange {
     @JoinColumn(name = "card_id")
     private Card card;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "changed_by")
+    private User author;
+
     @Column(nullable = false)
     private String field;
 
@@ -34,8 +39,9 @@ public class CardChange {
 
     protected CardChange() {}
 
-    public CardChange(Card card, String field, String oldValue, String newValue) {
+    public CardChange(Card card, User author, String field, String oldValue, String newValue) {
         this.card = card;
+        this.author = author;
         this.field = field;
         this.oldValue = oldValue;
         this.newValue = newValue;

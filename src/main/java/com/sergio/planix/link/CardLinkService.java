@@ -1,7 +1,8 @@
 package com.sergio.planix.link;
 
+import com.sergio.planix.board.BoardAccess;
 import com.sergio.planix.card.Card;
-import com.sergio.planix.card.CardRepository;
+import com.sergio.planix.card.CardAccess;
 import com.sergio.planix.common.NotFoundException;
 import com.sergio.planix.link.dto.CardLinkRequest;
 import com.sergio.planix.link.dto.CardLinkResponse;
@@ -15,24 +16,23 @@ import java.util.List;
 public class CardLinkService {
 
     private final CardLinkRepository repo;
-    private final CardRepository cardRepo;
+    private final CardAccess cardAccess;
+    private final BoardAccess boardAccess;
 
-    public CardLinkService(CardLinkRepository repo, CardRepository cardRepo) {
+    public CardLinkService(CardLinkRepository repo, CardAccess cardAccess, BoardAccess boardAccess) {
         this.repo = repo;
-        this.cardRepo = cardRepo;
+        this.cardAccess = cardAccess;
+        this.boardAccess = boardAccess;
     }
 
     @Transactional(readOnly = true)
     public List<CardLinkResponse> listByCard(Long cardId) {
-        if (!cardRepo.existsById(cardId)) {
-            throw new NotFoundException("Cartão %d não encontrado".formatted(cardId));
-        }
+        cardAccess.require(cardId);
         return repo.findByCardIdOrderByCreatedAtDesc(cardId).stream().map(CardLinkResponse::from).toList();
     }
 
     public CardLinkResponse create(Long cardId, CardLinkRequest req) {
-        Card card = cardRepo.findById(cardId)
-                .orElseThrow(() -> new NotFoundException("Cartão %d não encontrado".formatted(cardId)));
+        Card card = cardAccess.require(cardId);
         return CardLinkResponse.from(repo.save(new CardLink(card, req.url(), req.title())));
     }
 
@@ -48,7 +48,14 @@ public class CardLinkService {
     }
 
     private CardLink findOrThrow(Long id) {
-        return repo.findById(id)
-                .orElseThrow(() -> new NotFoundException("Link %d não encontrado".formatted(id)));
+        CardLink link = repo.findById(id).orElseThrow(() -> naoEncontrado(id));
+        if (!boardAccess.isMember(link.getCard().getList().getBoard().getId())) {
+            throw naoEncontrado(id);
+        }
+        return link;
+    }
+
+    private NotFoundException naoEncontrado(Long id) {
+        return new NotFoundException("Link %d não encontrado".formatted(id));
     }
 }

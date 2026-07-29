@@ -37,3 +37,6 @@ build/
 
 ### Anexos enviados pela API ###
 /uploads/
+
+### Segredos locais (o .env.example fica versionado) ###
+.env

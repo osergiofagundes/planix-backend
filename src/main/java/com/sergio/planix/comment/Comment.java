@@ -1,5 +1,6 @@
 package com.sergio.planix.comment;
 
+import com.sergio.planix.auth.User;
 import com.sergio.planix.card.Card;
 import com.sergio.planix.common.BaseEntity;
 import jakarta.persistence.*;
@@ -16,13 +17,18 @@ public class Comment extends BaseEntity {
     @JoinColumn(name = "card_id")
     private Card card;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id")
+    private User author;
+
     @Column(nullable = false, columnDefinition = "text")
     private String text;
 
     protected Comment() {}
 
-    public Comment(Card card, String text) {
+    public Comment(Card card, User author, String text) {
         this.card = card;
+        this.author = author;
         this.text = text;
     }
 }

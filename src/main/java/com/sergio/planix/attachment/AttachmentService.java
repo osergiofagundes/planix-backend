@@ -1,8 +1,10 @@
 package com.sergio.planix.attachment;
 
 import com.sergio.planix.attachment.dto.AttachmentResponse;
+import com.sergio.planix.auth.CurrentUser;
+import com.sergio.planix.board.BoardAccess;
 import com.sergio.planix.card.Card;
-import com.sergio.planix.card.CardRepository;
+import com.sergio.planix.card.CardAccess;
 import com.sergio.planix.common.NotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,29 +17,31 @@ import java.util.List;
 public class AttachmentService {
 
     private final AttachmentRepository repo;
-    private final CardRepository cardRepo;
     private final FileStorageService storage;
+    private final CardAccess cardAccess;
+    private final BoardAccess boardAccess;
+    private final CurrentUser currentUser;
 
-    public AttachmentService(AttachmentRepository repo, CardRepository cardRepo, FileStorageService storage) {
+    public AttachmentService(AttachmentRepository repo, FileStorageService storage,
+                             CardAccess cardAccess, BoardAccess boardAccess, CurrentUser currentUser) {
         this.repo = repo;
-        this.cardRepo = cardRepo;
         this.storage = storage;
+        this.cardAccess = cardAccess;
+        this.boardAccess = boardAccess;
+        this.currentUser = currentUser;
     }
 
     @Transactional(readOnly = true)
     public List<AttachmentResponse> list(Long cardId) {
-        if (!cardRepo.existsById(cardId)) {
-            throw new NotFoundException("Cartão %d não encontrado".formatted(cardId));
-        }
+        cardAccess.require(cardId);
         return repo.findByCardIdOrderByCreatedAtDesc(cardId).stream().map(AttachmentResponse::from).toList();
     }
 
     public AttachmentResponse upload(Long cardId, MultipartFile file) {
-        Card card = cardRepo.findById(cardId)
-                .orElseThrow(() -> new NotFoundException("Cartão %d não encontrado".formatted(cardId)));
+        Card card = cardAccess.require(cardId);
         String stored = storage.store(file);
-        Attachment a = new Attachment(card, file.getOriginalFilename(), stored,
-                file.getContentType(), file.getSize());
+        Attachment a = new Attachment(card, currentUser.reference(), file.getOriginalFilename(),
+                stored, file.getContentType(), file.getSize());
         return AttachmentResponse.from(repo.save(a));
     }
 
@@ -47,9 +51,17 @@ public class AttachmentService {
         storage.delete(a.getStoredFilename());   // apaga o arquivo do disco também
     }
 
+    /** Também é por aqui que o download entra — por isso a checagem mora dentro dele. */
     @Transactional(readOnly = true)
     public Attachment getEntity(Long id) {
-        return repo.findById(id)
-                .orElseThrow(() -> new NotFoundException("Anexo %d não encontrado".formatted(id)));
+        Attachment a = repo.findById(id).orElseThrow(() -> naoEncontrado(id));
+        if (!boardAccess.isMember(a.getCard().getList().getBoard().getId())) {
+            throw naoEncontrado(id);
+        }
+        return a;
+    }
+
+    private NotFoundException naoEncontrado(Long id) {
+        return new NotFoundException("Anexo %d não encontrado".formatted(id));
     }
 }

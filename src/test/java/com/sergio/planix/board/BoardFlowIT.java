@@ -7,7 +7,7 @@ import com.sergio.planix.common.NotFoundException;
 import com.sergio.planix.list.BoardListService;
 import com.sergio.planix.list.dto.BoardListRequest;
 import com.sergio.planix.list.dto.BoardListResponse;
-import com.sergio.planix.support.IntegrationTest;
+import com.sergio.planix.support.AuthenticatedIntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -17,7 +17,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
 
-class BoardFlowIT extends IntegrationTest {
+class BoardFlowIT extends AuthenticatedIntegrationTest {
 
     @Autowired BoardService boardService;
     @Autowired BoardListService listService;

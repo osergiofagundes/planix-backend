@@ -18,7 +18,7 @@ import com.sergio.planix.link.dto.CardLinkRequest;
 import com.sergio.planix.list.BoardListService;
 import com.sergio.planix.list.dto.BoardListRequest;
 import com.sergio.planix.list.dto.BoardListResponse;
-import com.sergio.planix.support.IntegrationTest;
+import com.sergio.planix.support.AuthenticatedIntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -26,7 +26,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
 /** Etiquetas (N:N), checklist, comentários e links — o conteúdo do capítulo 07. */
-class CardFeaturesIT extends IntegrationTest {
+class CardFeaturesIT extends AuthenticatedIntegrationTest {
 
     @Autowired BoardService boardService;
     @Autowired BoardListService listService;

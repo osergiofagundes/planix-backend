@@ -1,6 +1,8 @@
 package com.sergio.planix.list;
 
+import com.sergio.planix.auth.User;
 import com.sergio.planix.board.Board;
+import com.sergio.planix.board.BoardAccess;
 import com.sergio.planix.board.BoardRepository;
 import org.junit.jupiter.api.Test;
 
@@ -17,7 +19,8 @@ class BoardListServiceTest {
 
     private final BoardListRepository repo = mock(BoardListRepository.class);
     private final BoardRepository boardRepo = mock(BoardRepository.class);
-    private final BoardListService service = new BoardListService(repo, boardRepo);
+    private final BoardAccess access = mock(BoardAccess.class);
+    private final BoardListService service = new BoardListService(repo, boardRepo, access);
 
     private final Board board = board();
     private final BoardList aFazer = list("A Fazer", 0, 10L);
@@ -61,12 +64,15 @@ class BoardListServiceTest {
     }
 
     private void stubSiblings() {
+        // Sem isto o mock devolveria false e o findOrThrow responderia 404: é o comportamento
+        // certo para quem não tem acesso, mas aqui queremos testar a renumeração.
+        when(access.isMember(1L)).thenReturn(true);
         when(repo.findByBoardIdOrderByPositionAsc(1L))
                 .thenReturn(new ArrayList<>(List.of(aFazer, fazendo, concluido)));
     }
 
     private static Board board() {
-        Board board = new Board("Quadro", null);
+        Board board = new Board(new User("Dono", "dono@planix.test", "hash"), "Quadro", null);
         board.setId(1L);
         return board;
     }

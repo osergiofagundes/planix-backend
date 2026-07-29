@@ -1,6 +1,7 @@
 package com.sergio.planix.list;
 
 import com.sergio.planix.board.Board;
+import com.sergio.planix.board.BoardAccess;
 import com.sergio.planix.board.BoardRepository;
 import com.sergio.planix.common.NotFoundException;
 import com.sergio.planix.list.dto.BoardListRequest;
@@ -16,17 +17,17 @@ public class BoardListService {
 
     private final BoardListRepository repo;
     private final BoardRepository boardRepo;
+    private final BoardAccess access;
 
-    public BoardListService(BoardListRepository repo, BoardRepository boardRepo) {
+    public BoardListService(BoardListRepository repo, BoardRepository boardRepo, BoardAccess access) {
         this.repo = repo;
         this.boardRepo = boardRepo;
+        this.access = access;
     }
 
     @Transactional(readOnly = true)
     public List<BoardListResponse> listByBoard(Long boardId) {
-        if (!boardRepo.existsById(boardId)) {
-            throw new NotFoundException("Quadro %d não encontrado".formatted(boardId));
-        }
+        access.requireMember(boardId);
         return repo.findByBoardIdOrderByPositionAsc(boardId).stream().map(BoardListResponse::from).toList();
     }
 
@@ -36,6 +37,7 @@ public class BoardListService {
     }
 
     public BoardListResponse create(Long boardId, BoardListRequest req) {
+        access.requireMember(boardId);
         Board board = boardRepo.findById(boardId)
                 .orElseThrow(() -> new NotFoundException("Quadro %d não encontrado".formatted(boardId)));
         int position = repo.countByBoardId(boardId);
@@ -80,7 +82,14 @@ public class BoardListService {
     }
 
     private BoardList findOrThrow(Long id) {
-        return repo.findById(id)
-                .orElseThrow(() -> new NotFoundException("Lista %d não encontrada".formatted(id)));
+        BoardList list = repo.findById(id).orElseThrow(() -> naoEncontrada(id));
+        if (!access.isMember(list.getBoard().getId())) {
+            throw naoEncontrada(id);
+        }
+        return list;
+    }
+
+    private NotFoundException naoEncontrada(Long id) {
+        return new NotFoundException("Lista %d não encontrada".formatted(id));
     }
 }

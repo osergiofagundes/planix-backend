@@ -26,6 +26,10 @@ services:
       SPRING_DATASOURCE_USERNAME: planix
       SPRING_DATASOURCE_PASSWORD: planix
       PLANIX_UPLOAD_DIR: /data/uploads
+      # O ":?" faz o Compose RECUSAR subir se a variavel nao existir no ambiente (ou no .env).
+      # Mesmo principio do WeakKeyException do jjwt: melhor falhar na subida do que rodar com o
+      # segredo que esta publicado no repositorio.
+      PLANIX_JWT_SECRET: ${PLANIX_JWT_SECRET:?defina esta variavel (veja o .env.example)}
     ports:
       - "8080:8080"
     volumes:

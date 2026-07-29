@@ -1,8 +1,11 @@
 package com.sergio.planix.card;
 
+import com.sergio.planix.auth.CurrentUser;
+import com.sergio.planix.board.BoardAccess;
 import com.sergio.planix.card.dto.CardCreateRequest;
 import com.sergio.planix.card.dto.CardResponse;
 import com.sergio.planix.card.dto.CardUpdateRequest;
+import com.sergio.planix.common.CrossBoardMoveException;
 import com.sergio.planix.common.NotFoundException;
 import com.sergio.planix.history.CardChange;
 import com.sergio.planix.history.CardChangeRepository;
@@ -25,45 +28,47 @@ public class CardService {
     private final CardRepository cardRepo;
     private final BoardListRepository listRepo;
     private final CardChangeRepository changeRepo;
+    private final CardAccess cardAccess;
+    private final BoardAccess boardAccess;
+    private final CurrentUser currentUser;
 
     public CardService(CardRepository cardRepo, BoardListRepository listRepo,
-                       CardChangeRepository changeRepo) {
+                       CardChangeRepository changeRepo, CardAccess cardAccess,
+                       BoardAccess boardAccess, CurrentUser currentUser) {
         this.cardRepo = cardRepo;
         this.listRepo = listRepo;
         this.changeRepo = changeRepo;
+        this.cardAccess = cardAccess;
+        this.boardAccess = boardAccess;
+        this.currentUser = currentUser;
     }
 
     @Transactional(readOnly = true)
     public List<CardResponse> listByList(Long listId) {
-        if (!listRepo.existsById(listId)) {
-            throw new NotFoundException("Lista %d não encontrada".formatted(listId));
-        }
+        findListOrThrow(listId);
         return cardRepo.findByListIdOrderByPositionAsc(listId).stream().map(CardResponse::from).toList();
     }
 
     @Transactional(readOnly = true)
     public CardResponse get(Long id) {
-        return CardResponse.from(findOrThrow(id));
+        return CardResponse.from(cardAccess.require(id));
     }
 
     @Transactional(readOnly = true)
     public List<CardChangeResponse> listChanges(Long cardId) {
-        if (!cardRepo.existsById(cardId)) {
-            throw new NotFoundException("Cartão %d não encontrado".formatted(cardId));
-        }
+        cardAccess.require(cardId);
         return changeRepo.findByCardIdOrderByChangedAtDesc(cardId).stream()
                 .map(CardChangeResponse::from).toList();
     }
 
     public CardResponse create(Long listId, CardCreateRequest req) {
-        BoardList list = listRepo.findById(listId)
-                .orElseThrow(() -> new NotFoundException("Lista %d não encontrada".formatted(listId)));
+        BoardList list = findListOrThrow(listId);
         int position = cardRepo.countByListId(listId);
         return CardResponse.from(cardRepo.save(new Card(list, req.title(), position)));
     }
 
     public CardResponse update(Long cardId, CardUpdateRequest req) {
-        Card card = findOrThrow(cardId);
+        Card card = cardAccess.require(cardId);
         Priority newPriority = req.priority() == null ? Priority.NONE : req.priority();
         List<CardChange> changes = new ArrayList<>();
 
@@ -82,10 +87,10 @@ public class CardService {
     }
 
     public CardResponse setCompleted(Long cardId, boolean completed) {
-        Card card = findOrThrow(cardId);
+        Card card = cardAccess.require(cardId);
         if (card.isCompleted() == completed) return CardResponse.from(card);
 
-        changeRepo.save(new CardChange(card, "completed",
+        changeRepo.save(new CardChange(card, currentUser.reference(), "completed",
                 String.valueOf(card.isCompleted()), String.valueOf(completed)));
 
         card.setCompleted(completed);
@@ -94,13 +99,17 @@ public class CardService {
     }
 
     public void move(Long cardId, Long targetListId, int newPosition) {
-        Card card = findOrThrow(cardId);
+        Card card = cardAccess.require(cardId);
         Long sourceListId = card.getList().getId();
 
         if (!sourceListId.equals(targetListId)) {
-            BoardList target = listRepo.findById(targetListId)
-                    .orElseThrow(() -> new NotFoundException("Lista %d não encontrada".formatted(targetListId)));
-            changeRepo.save(new CardChange(card, "list_id",
+            BoardList target = findListOrThrow(targetListId);
+
+            if (!target.getBoard().getId().equals(card.getList().getBoard().getId())) {
+                throw new CrossBoardMoveException(
+                        "A lista de destino precisa pertencer ao mesmo quadro do cartão");
+            }
+            changeRepo.save(new CardChange(card, currentUser.reference(), "list_id",
                     String.valueOf(sourceListId), String.valueOf(targetListId)));
             card.setList(target);
             cardRepo.flush();
@@ -110,7 +119,7 @@ public class CardService {
     }
 
     public void delete(Long cardId) {
-        Card card = findOrThrow(cardId);
+        Card card = cardAccess.require(cardId);
         Long listId = card.getList().getId();
 
         cardRepo.delete(card);
@@ -145,14 +154,22 @@ public class CardService {
     private void recordIfChanged(List<CardChange> acc, Card card, String field,
                                  String oldValue, String newValue) {
         if (!Objects.equals(oldValue, newValue)) {
-            acc.add(new CardChange(card, field, oldValue, newValue));
+            acc.add(new CardChange(card, currentUser.reference(), field, oldValue, newValue));
         }
     }
 
     private static String str(Object o) { return o == null ? null : o.toString(); }
 
-    private Card findOrThrow(Long id) {
-        return cardRepo.findById(id)
-                .orElseThrow(() -> new NotFoundException("Cartão %d não encontrado".formatted(id)));
+    private BoardList findListOrThrow(Long listId) {
+        BoardList list = listRepo.findById(listId)
+                .orElseThrow(() -> naoEncontrada(listId));
+        if (!boardAccess.isMember(list.getBoard().getId())) {
+            throw naoEncontrada(listId);
+        }
+        return list;
+    }
+
+    private NotFoundException naoEncontrada(Long listId) {
+        return new NotFoundException("Lista %d não encontrada".formatted(listId));
     }
 }

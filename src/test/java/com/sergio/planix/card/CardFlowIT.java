@@ -10,7 +10,7 @@ import com.sergio.planix.history.dto.CardChangeResponse;
 import com.sergio.planix.list.BoardListService;
 import com.sergio.planix.list.dto.BoardListRequest;
 import com.sergio.planix.list.dto.BoardListResponse;
-import com.sergio.planix.support.IntegrationTest;
+import com.sergio.planix.support.AuthenticatedIntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -19,7 +19,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
-class CardFlowIT extends IntegrationTest {
+class CardFlowIT extends AuthenticatedIntegrationTest {
 
     @Autowired BoardService boardService;
     @Autowired BoardListService listService;

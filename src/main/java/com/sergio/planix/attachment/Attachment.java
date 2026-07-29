@@ -1,5 +1,6 @@
 package com.sergio.planix.attachment;
 
+import com.sergio.planix.auth.User;
 import com.sergio.planix.card.Card;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -24,6 +25,14 @@ public class Attachment {
     @JoinColumn(name = "card_id")
     private Card card;
 
+    /**
+     * Quem subiu. É contexto, não posse: anexo é conteúdo do cartão, e qualquer pessoa com acesso
+     * ao quadro pode remover — diferente do comentário, que é fala de alguém.
+     */
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "user_id")
+    private User author;
+
     @Column(name = "original_filename", nullable = false)
     private String originalFilename;
 
@@ -41,9 +50,10 @@ public class Attachment {
 
     protected Attachment() {}
 
-    public Attachment(Card card, String originalFilename, String storedFilename,
+    public Attachment(Card card, User author, String originalFilename, String storedFilename,
                       String contentType, Long sizeBytes) {
         this.card = card;
+        this.author = author;
         this.originalFilename = originalFilename;
         this.storedFilename = storedFilename;
         this.contentType = contentType;
