@@ -1,0 +1,16 @@
+services:
+  app:
+    image: maven:3.9-eclipse-temurin-21     # anula o build da imagem de produção
+    build: !reset null
+    working_dir: /workspace
+    command: mvn -B spring-boot:run
+    environment:
+      SPRING_DOCKER_COMPOSE_ENABLED: "false"
+      SPRING_DEVTOOLS_RESTART_ENABLED: "true"
+    volumes:
+      - .:/workspace                        # o projeto do host, dentro do container
+      - planix_m2:/root/.m2                 # cache do Maven entre execuções
+      - planix_uploads:/data/uploads
+
+volumes:
+  planix_m2:
