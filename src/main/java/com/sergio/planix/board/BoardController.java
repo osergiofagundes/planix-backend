@@ -2,6 +2,7 @@ package com.sergio.planix.board;
 
 import com.sergio.planix.board.dto.BoardRequest;
 import com.sergio.planix.board.dto.BoardResponse;
+import com.sergio.planix.board.dto.OwnerTransferRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,6 +36,12 @@ public class BoardController {
     @PutMapping("/{id}")
     public BoardResponse update(@PathVariable Long id, @Valid @RequestBody BoardRequest req) {
         return service.update(id, req);
+    }
+
+    @PatchMapping("/{id}/owner")
+    public BoardResponse transferOwnership(@PathVariable Long id,
+                                           @Valid @RequestBody OwnerTransferRequest req) {
+        return service.transferOwnership(id, req.userId());
     }
 
     @DeleteMapping("/{id}")

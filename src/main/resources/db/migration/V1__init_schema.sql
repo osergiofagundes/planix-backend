@@ -1,4 +1,3 @@
--- Quadros
 CREATE TABLE boards (
     id          BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     name        VARCHAR(150) NOT NULL,
@@ -7,7 +6,6 @@ CREATE TABLE boards (
     updated_at  TIMESTAMPTZ  NOT NULL
 );
 
--- Listas de um quadro
 CREATE TABLE board_lists (
     id         BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     board_id   BIGINT       NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
@@ -18,7 +16,6 @@ CREATE TABLE board_lists (
 );
 CREATE INDEX idx_board_lists_board ON board_lists (board_id, position);
 
--- Cartões de uma lista
 CREATE TABLE cards (
     id           BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     list_id      BIGINT       NOT NULL REFERENCES board_lists(id) ON DELETE CASCADE,
@@ -34,7 +31,6 @@ CREATE TABLE cards (
 );
 CREATE INDEX idx_cards_list ON cards (list_id, position);
 
--- Etiquetas reutilizáveis dentro de um quadro
 CREATE TABLE labels (
     id         BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     board_id   BIGINT       NOT NULL REFERENCES boards(id) ON DELETE CASCADE,
@@ -46,7 +42,6 @@ CREATE TABLE labels (
 );
 CREATE INDEX idx_labels_board ON labels (board_id);
 
--- Junção N:N entre cartão e etiqueta
 CREATE TABLE card_labels (
     card_id  BIGINT NOT NULL REFERENCES cards(id)  ON DELETE CASCADE,
     label_id BIGINT NOT NULL REFERENCES labels(id) ON DELETE CASCADE,

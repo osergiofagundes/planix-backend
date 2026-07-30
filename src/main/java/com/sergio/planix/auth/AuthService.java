@@ -5,19 +5,14 @@ import com.sergio.planix.common.EmailAlreadyUsedException;
 import com.sergio.planix.common.InvalidCredentialsException;
 import com.sergio.planix.common.InvalidRefreshTokenException;
 import com.sergio.planix.common.NotFoundException;
+import com.sergio.planix.common.Tokens;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.nio.charset.StandardCharsets;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
 import java.time.Duration;
 import java.time.OffsetDateTime;
-import java.util.Base64;
-import java.util.HexFormat;
 import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
@@ -25,8 +20,6 @@ import java.util.UUID;
 @Service
 @Transactional
 public class AuthService {
-
-    private static final SecureRandom RANDOM = new SecureRandom();
 
     private final UserRepository userRepo;
     private final RefreshTokenRepository refreshRepo;
@@ -71,7 +64,7 @@ public class AuthService {
 
     @Transactional(noRollbackFor = InvalidRefreshTokenException.class)
     public AuthResponse refresh(String presentedToken) {
-        RefreshToken stored = refreshRepo.findByTokenHash(sha256(presentedToken))
+        RefreshToken stored = refreshRepo.findByTokenHash(Tokens.sha256(presentedToken))
                 .orElseThrow(() -> new InvalidRefreshTokenException("Refresh token inválido ou expirado"));
 
         if (stored.isRevoked()) {
@@ -87,7 +80,7 @@ public class AuthService {
     }
 
     public void logout(String presentedToken) {
-        refreshRepo.findByTokenHash(sha256(presentedToken))
+        refreshRepo.findByTokenHash(Tokens.sha256(presentedToken))
                 .ifPresent(rt -> rt.setRevokedAt(OffsetDateTime.now()));
     }
 
@@ -103,11 +96,11 @@ public class AuthService {
     }
 
     private AuthResponse issueTokens(User user) {
-        String refreshValue = randomToken();
+        String refreshValue = Tokens.random();
 
         refreshRepo.save(new RefreshToken(
                 user,
-                sha256(refreshValue),
+                Tokens.sha256(refreshValue),
                 OffsetDateTime.now().plus(refreshTtl)));
 
         return new AuthResponse(
@@ -118,21 +111,5 @@ public class AuthService {
 
     private static String normalize(String email) {
         return email.trim().toLowerCase(Locale.ROOT);
-    }
-
-    private static String randomToken() {
-        byte[] bytes = new byte[32];
-        RANDOM.nextBytes(bytes);
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
-    }
-
-    private static String sha256(String value) {
-        try {
-            byte[] hash = MessageDigest.getInstance("SHA-256")
-                    .digest(value.getBytes(StandardCharsets.UTF_8));
-            return HexFormat.of().formatHex(hash);   // 64 caracteres — o tamanho da coluna
-        } catch (NoSuchAlgorithmException e) {
-            throw new IllegalStateException(e);
-        }
     }
 }

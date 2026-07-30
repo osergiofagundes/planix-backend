@@ -10,6 +10,6 @@ public interface BoardRepository extends JpaRepository<Board, Long> {
 
     boolean existsByIdAndOwnerId(Long id, Long ownerId);
 
-    @Query("select b from Board b where b.owner.id = :userId")
+    @Query("select m.board from BoardMember m where m.user.id = :userId")
     List<Board> findAccessibleBy(@Param("userId") Long userId);
 }

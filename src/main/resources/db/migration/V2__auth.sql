@@ -1,4 +1,3 @@
--- Usuários. O password_hash cabe em VARCHAR(100) com folga: BCrypt sempre gera 60 caracteres.
 CREATE TABLE users (
     id            BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     name          VARCHAR(150) NOT NULL,
@@ -9,7 +8,6 @@ CREATE TABLE users (
     CONSTRAINT uq_users_email UNIQUE (email)
 );
 
--- Refresh tokens: guardamos o SHA-256, nunca o valor. Vazou o banco, não vazou sessão.
 CREATE TABLE refresh_tokens (
     id         BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     user_id    BIGINT      NOT NULL REFERENCES users(id) ON DELETE CASCADE,
@@ -21,13 +19,9 @@ CREATE TABLE refresh_tokens (
 );
 CREATE INDEX idx_refresh_tokens_user ON refresh_tokens (user_id);
 
--- O dono do quadro. Tudo abaixo (listas, cartões, etiquetas...) herda a posse por aqui.
 ALTER TABLE boards ADD COLUMN owner_id BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE;
 CREATE INDEX idx_boards_owner ON boards (owner_id);
 
--- Autoria: com mais de uma pessoa no sistema, "quem escreveu isso?" precisa de resposta.
--- Os ON DELETE são diferentes de propósito: comentário e anexo somem com a conta; o histórico
--- sobrevive ao autor (auditoria com buraco deixa de ser auditoria) e vira "usuário removido".
 ALTER TABLE comments     ADD COLUMN user_id    BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE;
 ALTER TABLE attachments  ADD COLUMN user_id    BIGINT NOT NULL REFERENCES users(id) ON DELETE CASCADE;
 ALTER TABLE card_changes ADD COLUMN changed_by BIGINT          REFERENCES users(id) ON DELETE SET NULL;

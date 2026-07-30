@@ -1,22 +1,27 @@
 package com.sergio.planix.board;
 
 import com.sergio.planix.auth.CurrentUser;
+import com.sergio.planix.common.ForbiddenException;
 import com.sergio.planix.common.NotFoundException;
+import com.sergio.planix.member.BoardMemberRepository;
 import org.springframework.stereotype.Component;
 
 @Component
 public class BoardAccess {
 
     private final BoardRepository boardRepo;
+    private final BoardMemberRepository memberRepo;
     private final CurrentUser currentUser;
 
-    public BoardAccess(BoardRepository boardRepo, CurrentUser currentUser) {
+    public BoardAccess(BoardRepository boardRepo, BoardMemberRepository memberRepo,
+                       CurrentUser currentUser) {
         this.boardRepo = boardRepo;
+        this.memberRepo = memberRepo;
         this.currentUser = currentUser;
     }
 
     public boolean isMember(Long boardId) {
-        return boardRepo.existsByIdAndOwnerId(boardId, currentUser.id());
+        return memberRepo.existsByBoardIdAndUserId(boardId, currentUser.id());
     }
 
     public void requireMember(Long boardId) {
@@ -27,5 +32,8 @@ public class BoardAccess {
 
     public void requireOwner(Long boardId) {
         requireMember(boardId);
+        if (!boardRepo.existsByIdAndOwnerId(boardId, currentUser.id())) {
+            throw new ForbiddenException("Apenas o dono do quadro pode fazer isto");
+        }
     }
 }
