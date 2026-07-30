@@ -5,6 +5,7 @@ import com.sergio.planix.board.BoardAccess;
 import com.sergio.planix.board.BoardRepository;
 import com.sergio.planix.card.Card;
 import com.sergio.planix.card.CardAccess;
+import com.sergio.planix.common.LabelNameAlreadyUsedException;
 import com.sergio.planix.common.NotFoundException;
 import com.sergio.planix.label.dto.LabelRequest;
 import com.sergio.planix.label.dto.LabelResponse;
@@ -38,6 +39,12 @@ public class LabelService {
 
     public LabelResponse create(Long boardId, LabelRequest req) {
         boardAccess.requireMember(boardId);
+
+        if (labelRepo.existsByBoardIdAndName(boardId, req.name())) {
+            throw new LabelNameAlreadyUsedException(
+                    "O quadro já tem uma etiqueta chamada \"%s\"".formatted(req.name()));
+        }
+
         Board board = boardRepo.findById(boardId)
                 .orElseThrow(() -> new NotFoundException("Quadro %d não encontrado".formatted(boardId)));
         return LabelResponse.from(labelRepo.save(new Label(board, req.name(), req.color())));

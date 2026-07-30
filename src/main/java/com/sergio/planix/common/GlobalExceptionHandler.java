@@ -1,6 +1,7 @@
 package com.sergio.planix.common;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.FieldError;
@@ -70,5 +71,18 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(ForbiddenException.class)
     public ResponseEntity<ApiError> handleForbidden(ForbiddenException ex, HttpServletRequest req) {
         return build(HttpStatus.FORBIDDEN, ex.getMessage(), req, null);
+    }
+
+    @ExceptionHandler(LabelNameAlreadyUsedException.class)
+    public ResponseEntity<ApiError> handleLabelNameAlreadyUsed(LabelNameAlreadyUsedException ex,
+                                                              HttpServletRequest req) {
+        return build(HttpStatus.CONFLICT, ex.getMessage(), req, null);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ApiError> handleDataIntegrityViolation(DataIntegrityViolationException ex,
+                                                                HttpServletRequest req) {
+        return build(HttpStatus.CONFLICT,
+                "A operação viola uma restrição de integridade dos dados", req, null);
     }
 }
