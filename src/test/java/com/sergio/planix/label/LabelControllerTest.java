@@ -22,12 +22,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/**
- * Contrato HTTP das etiquetas: validação e, principalmente, os dois caminhos que levam a 409.
- *
- * <p>Filtros de segurança desligados de propósito — esta fatia prova status e corpo de resposta,
- * não autenticação. Quem prova que a rota exige token é o {@code AuthHttpIT}, com contexto completo.
- */
 @WebMvcTest(LabelController.class)
 @AutoConfigureMockMvc(addFilters = false)
 class LabelControllerTest {
@@ -75,12 +69,6 @@ class LabelControllerTest {
                         "O quadro já tem uma etiqueta chamada \"Urgente\""));
     }
 
-    /**
-     * A rede de segurança: quando a checagem do service é furada — dois pedidos simultâneos passam
-     * juntos pelo {@code existsByBoardIdAndName} — quem barra é a constraint do banco, e o resultado
-     * ainda tem que ser 409, não 500. A corrida de verdade não é reproduzível num teste; mockar o
-     * service para lançar a exceção do banco é o que dá para provar, e é o que importa aqui.
-     */
     @Test
     void violacaoDeUniqueNoBanco_retorna409EmVezDe500() throws Exception {
         when(service.create(eq(1L), any(LabelRequest.class)))
@@ -92,7 +80,6 @@ class LabelControllerTest {
                         .content("{\"name\":\"Urgente\",\"color\":\"azul\"}"))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.status").value(409))
-                // a mensagem crua do driver não vaza para o cliente
                 .andExpect(jsonPath("$.message").value(
                         "A operação viola uma restrição de integridade dos dados"));
     }

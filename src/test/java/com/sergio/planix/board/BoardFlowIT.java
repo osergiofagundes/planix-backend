@@ -55,7 +55,7 @@ class BoardFlowIT extends AuthenticatedIntegrationTest {
         boardService.delete(board.id(), "Projeto");
 
         assertThat(boardService.list()).extracting(BoardResponse::id).doesNotContain(board.id());
-        assertThatThrownBy(() -> listService.get(lista.id()))   // sumiu por cascade
+        assertThatThrownBy(() -> listService.get(lista.id()))
                 .isInstanceOf(NotFoundException.class);
     }
 }

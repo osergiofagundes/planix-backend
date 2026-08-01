@@ -12,7 +12,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
 
-/** Cuida do arquivo em si (o banco guarda só os metadados): salvar, carregar e apagar. */
 @Service
 public class FileStorageService {
 
@@ -20,14 +19,12 @@ public class FileStorageService {
 
     public FileStorageService(Path uploadDir) { this.uploadDir = uploadDir; }
 
-    /** Salva o arquivo com um nome único e devolve esse nome. */
     public String store(MultipartFile file) {
         if (file.isEmpty()) throw new StorageException("Arquivo vazio", null);
         String ext = getExtension(file.getOriginalFilename());
         String stored = UUID.randomUUID() + (ext.isEmpty() ? "" : "." + ext);
         try {
             Path target = uploadDir.resolve(stored).normalize();
-            // proteção contra "path traversal" (../)
             if (!target.getParent().equals(uploadDir)) {
                 throw new StorageException("Caminho inválido", null);
             }
@@ -38,7 +35,6 @@ public class FileStorageService {
         }
     }
 
-    /** Carrega o arquivo salvo como Resource para o download. */
     public Resource loadAsResource(String storedFilename) {
         try {
             Path file = uploadDir.resolve(storedFilename).normalize();

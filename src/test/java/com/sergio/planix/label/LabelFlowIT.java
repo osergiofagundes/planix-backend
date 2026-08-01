@@ -13,11 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-/**
- * A regra que a constraint {@code uq_label_board_name} sempre teve e o service nunca checou: até
- * este teste existir, criar etiqueta duplicada estourava um {@code DataIntegrityViolationException}
- * cru e a API respondia 500 a um erro claramente do cliente.
- */
 class LabelFlowIT extends AuthenticatedIntegrationTest {
 
     @Autowired BoardService boardService;
@@ -34,14 +29,9 @@ class LabelFlowIT extends AuthenticatedIntegrationTest {
 
         assertThat(labelService.listByBoard(quadro.id()))
                 .extracting(LabelResponse::color)
-                .containsExactly("vermelho");     // a segunda não entrou
+                .containsExactly("vermelho");
     }
 
-    /**
-     * O nome é único <b>dentro do quadro</b>. Sem este teste, uma checagem global
-     * ({@code existsByName}) faria o teste de cima passar e quebraria o uso normal do sistema —
-     * "Urgente" é exatamente o tipo de etiqueta que existe em todo quadro.
-     */
     @Test
     void mesmoNomeEmQuadrosDiferentes_saoPermitidas() {
         BoardResponse trabalho = boardService.create(new BoardRequest("Trabalho", null));

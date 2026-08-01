@@ -20,7 +20,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/** Contrato HTTP dos comentários: validação e 404, os dois casos que faltavam nos recursos pequenos. */
 @WebMvcTest(CommentController.class)
 @AutoConfigureMockMvc(addFilters = false)
 class CommentControllerTest {

@@ -52,7 +52,7 @@ public class BoardInviteService {
                 OffsetDateTime.now().plusDays(
                         req.expiresInDays() == null ? DIAS_PADRAO : req.expiresInDays())));
 
-        return new InviteCreatedResponse(invite.getId(), value,     // o valor, só desta vez
+        return new InviteCreatedResponse(invite.getId(), value,
                 invite.getExpiresAt(), invite.getMaxUses());
     }
 
@@ -85,7 +85,7 @@ public class BoardInviteService {
         if (memberRepo.existsByBoardIdAndUserId(board.getId(), currentUser.id())) {
             return BoardResponse.from(board);
         }
-        if (!invite.isUsable() || repo.consume(invite.getId()) == 0) {   // ou alguém chegou primeiro
+        if (!invite.isUsable() || repo.consume(invite.getId()) == 0) {
             throw invalido();
         }
         memberRepo.save(new BoardMember(board, currentUser.reference()));

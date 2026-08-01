@@ -12,11 +12,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/**
- * Os caminhos de erro no nível HTTP, com token de verdade e contexto completo. As regras em si já
- * têm teste unitário; o que se prova aqui é o que o cliente recebe: o status certo e o corpo
- * {@code ApiError} em vez da página de erro do container.
- */
 class ApiErrorPathsIT extends HttpIntegrationTest {
 
     @Test

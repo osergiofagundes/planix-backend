@@ -17,7 +17,6 @@ import org.springframework.security.web.AuthenticationEntryPoint;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.AccessDeniedHandler;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-// Spring Boot 4 usa Jackson 3: o pacote e tools.jackson, nao com.fasterxml.jackson.
 import tools.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
@@ -39,6 +38,8 @@ public class SecurityConfig {
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/register", "/api/auth/login",
                                          "/api/auth/refresh").permitAll()
+                        .requestMatchers("/v3/api-docs", "/v3/api-docs/**",
+                                         "/scalar", "/scalar/**").permitAll()
                         .anyRequest().authenticated())
                 .exceptionHandling(ex -> ex
                         .authenticationEntryPoint(entryPoint)

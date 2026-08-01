@@ -75,7 +75,7 @@ public class AuthService {
             throw new InvalidRefreshTokenException("Refresh token inválido ou expirado");
         }
 
-        stored.setRevokedAt(OffsetDateTime.now());   // usou, queimou
+        stored.setRevokedAt(OffsetDateTime.now());
         return issueTokens(stored.getUser());
     }
 

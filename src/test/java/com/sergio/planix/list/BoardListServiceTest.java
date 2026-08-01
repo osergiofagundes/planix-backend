@@ -14,7 +14,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-/** O algoritmo de renumeração do move — o coração da ordenação, e o que mais quebra sem teste. */
 class BoardListServiceTest {
 
     private final BoardListRepository repo = mock(BoardListRepository.class);
@@ -64,8 +63,6 @@ class BoardListServiceTest {
     }
 
     private void stubSiblings() {
-        // Sem isto o mock devolveria false e o findOrThrow responderia 404: é o comportamento
-        // certo para quem não tem acesso, mas aqui queremos testar a renumeração.
         when(access.isMember(1L)).thenReturn(true);
         when(repo.findByBoardIdOrderByPositionAsc(1L))
                 .thenReturn(new ArrayList<>(List.of(aFazer, fazendo, concluido)));

@@ -1,9 +1,15 @@
 package com.sergio.planix.board.dto;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
+@Schema(description = "Dados para criar ou renomear um quadro.")
 public record BoardRequest(
+        @Schema(description = "Nome do quadro", example = "Lançamento do site")
         @NotBlank @Size(max = 150) String name,
+
+        @Schema(description = "Descrição livre. Opcional.",
+                example = "Tudo que precisa sair antes de colocar o site no ar.")
         @Size(max = 2000) String description
 ) {}

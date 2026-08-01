@@ -13,10 +13,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import java.util.List;
 import java.util.UUID;
 
-/**
- * Base dos testes que chamam services diretamente: depois do capítulo 11 todos eles precisam de
- * um usuário no contexto de segurança, senão o CurrentUser.id() lança.
- */
 public abstract class AuthenticatedIntegrationTest extends IntegrationTest {
 
     @Autowired protected UserRepository userRepo;
@@ -30,17 +26,11 @@ public abstract class AuthenticatedIntegrationTest extends IntegrationTest {
         autenticarComo(usuarioLogado);
     }
 
-    /**
-     * O SecurityContextHolder guarda o usuário numa ThreadLocal, e o JUnit reaproveita threads
-     * entre classes. Sem esta limpeza, um teste que deveria rodar sem autenticação herda o usuário
-     * do anterior e passa por engano — o pior tipo de teste, o que dá verde errado.
-     */
     @AfterEach
     void limpaContextoDeSeguranca() {
         SecurityContextHolder.clearContext();
     }
 
-    /** E-mail único: os testes não são @Transactional, nada é desfeito, e uq_users_email é real. */
     protected User criarUsuario() {
         String email = "user-" + UUID.randomUUID() + "@planix.test";
         return userRepo.save(new User("Teste", email, encoder.encode("senha-de-teste")));

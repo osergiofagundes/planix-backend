@@ -21,7 +21,6 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-/** O histórico diff, o completed_at e a regra de mover só dentro do mesmo quadro. */
 class CardServiceTest {
 
     private final CardRepository cardRepo = mock(CardRepository.class);
@@ -97,10 +96,6 @@ class CardServiceTest {
         verify(changeRepo, never()).save(any(CardChange.class));
     }
 
-    /**
-     * Mover para uma lista de outro quadro trocaria a plateia do cartão sem ninguém pedir — mesmo
-     * quando a pessoa tem acesso aos dois quadros.
-     */
     @Test
     void moverParaListaDeOutroQuadro_recusaCom409() {
         Card card = card("Comprar domínio");
@@ -110,13 +105,13 @@ class CardServiceTest {
         BoardList listaDoOutroQuadro = new BoardList(outro, "A Fazer", 0);
         listaDoOutroQuadro.setId(20L);
         when(listRepo.findById(20L)).thenReturn(Optional.of(listaDoOutroQuadro));
-        when(boardAccess.isMember(2L)).thenReturn(true);   // é membro dos dois, e ainda assim não
+        when(boardAccess.isMember(2L)).thenReturn(true);
 
         assertThatThrownBy(() -> service.move(100L, 20L, 0))
                 .isInstanceOf(CrossBoardMoveException.class);
 
         verify(changeRepo, never()).save(any(CardChange.class));
-        assertThat(card.getList().getId()).isEqualTo(10L);   // continua onde estava
+        assertThat(card.getList().getId()).isEqualTo(10L);
     }
 
     private static Board board(Long id) {

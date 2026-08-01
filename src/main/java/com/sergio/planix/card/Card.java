@@ -1,5 +1,6 @@
 package com.sergio.planix.card;
 
+import com.sergio.planix.auth.User;
 import com.sergio.planix.common.BaseEntity;
 import com.sergio.planix.label.Label;
 import com.sergio.planix.list.BoardList;
@@ -50,6 +51,14 @@ public class Card extends BaseEntity {
             inverseJoinColumns = @JoinColumn(name = "label_id")
     )
     private Set<Label> labels = new HashSet<>();
+
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(
+            name = "card_assignees",
+            joinColumns = @JoinColumn(name = "card_id"),
+            inverseJoinColumns = @JoinColumn(name = "user_id")
+    )
+    private Set<User> assignees = new HashSet<>();
 
     protected Card() {}
 

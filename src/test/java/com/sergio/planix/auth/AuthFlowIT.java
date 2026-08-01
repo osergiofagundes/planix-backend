@@ -17,16 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-/**
- * O teste de maior valor do projeto: <b>um usuário não vê os dados do outro</b>.
- *
- * <p>É a regra que, se quebrar, ninguém percebe até ser tarde — não há tela vermelha, não há
- * exceção no log, a API só responde 200 para quem não devia. Uma única linha de {@code requireMember}
- * apagada por engano tem que derrubar a build por causa daqui.
- *
- * <p>Todas as asserções esperam <b>404, nunca 403</b>: dizer "existe, mas não é seu" já é vazar
- * informação sobre o que existe no sistema de outra pessoa.
- */
 class AuthFlowIT extends AuthenticatedIntegrationTest {
 
     @Autowired BoardService boardService;
@@ -37,7 +27,7 @@ class AuthFlowIT extends AuthenticatedIntegrationTest {
     void quadroDeOutroUsuario_respondeNaoEncontrado() {
         BoardResponse meuQuadro = boardService.create(new BoardRequest("Meu quadro", null));
 
-        autenticarComo(criarUsuario());          // agora somos outra pessoa
+        autenticarComo(criarUsuario());
 
         assertThatThrownBy(() -> boardService.get(meuQuadro.id()))
                 .isInstanceOf(NotFoundException.class);
@@ -73,12 +63,11 @@ class AuthFlowIT extends AuthenticatedIntegrationTest {
         BoardListResponse minhaLista = listService.create(meuQuadro.id(), new BoardListRequest("A Fazer"));
         CardResponse meuCartao = cardService.create(minhaLista.id(), new CardCreateRequest("Meu cartão"));
 
-        // a lista de destino nem existe do meu ponto de vista: 404, não 409 de quadro diferente
         assertThatThrownBy(() -> cardService.move(meuCartao.id(), listaDoOutro.id(), 0))
                 .isInstanceOf(NotFoundException.class);
 
         assertThat(cardService.listByList(minhaLista.id()))
                 .extracting(CardResponse::title)
-                .containsExactly("Meu cartão");      // o cartão não saiu do lugar
+                .containsExactly("Meu cartão");
     }
 }

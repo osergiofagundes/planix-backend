@@ -23,7 +23,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/** Contrato HTTP dos anexos: o 413 do limite de upload e o 404 de download inexistente. */
 @WebMvcTest(AttachmentController.class)
 @AutoConfigureMockMvc(addFilters = false)
 class AttachmentControllerTest {
@@ -37,16 +36,6 @@ class AttachmentControllerTest {
     @MockitoBean CurrentUser currentUser;
     @MockitoBean JwtService jwtService;
 
-    /**
-     * Prova que o handler de {@code MaxUploadSizeExceededException} devolve 413 com o corpo padrão
-     * da API, e não a página de erro do container.
-     *
-     * <p>O que este teste <b>não</b> cobre: o limite de 10MB em si
-     * ({@code spring.servlet.multipart.max-file-size}). O MockMvc monta um
-     * {@code MockMultipartHttpServletRequest} já parseado e nunca passa pelo
-     * {@code MultipartResolver}, então mandar 11MB de verdade aqui não dispara nada — o limite é
-     * aplicado pelo container, que o MockMvc não usa. Por isso a exceção vem do service mockado.
-     */
     @Test
     void uploadAcimaDoLimite_retorna413ComCorpoApiError() throws Exception {
         when(service.upload(eq(1L), any(MultipartFile.class)))

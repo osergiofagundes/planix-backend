@@ -32,6 +32,10 @@ docker compose up -d          # sobe só o Postgres
 ./mvnw spring-boot:run        # no Windows: .\mvnw.cmd spring-boot:run
 ```
 
+## Documentação da API
+
+**http://localhost:8080/scalar**
+
 ## Rodando via Docker
 
 ```bash

@@ -7,6 +7,5 @@ class PlanixApplicationIT extends IntegrationTest {
 
     @Test
     void contextLoads() {
-        // se o contexto sobe, as migrations rodaram e todas as @Entity batem com o schema
     }
 }

@@ -48,10 +48,9 @@ public class AttachmentService {
     public void delete(Long id) {
         Attachment a = getEntity(id);
         repo.delete(a);
-        storage.delete(a.getStoredFilename());   // apaga o arquivo do disco também
+        storage.delete(a.getStoredFilename());
     }
 
-    /** Também é por aqui que o download entra — por isso a checagem mora dentro dele. */
     @Transactional(readOnly = true)
     public Attachment getEntity(Long id) {
         Attachment a = repo.findById(id).orElseThrow(() -> naoEncontrado(id));

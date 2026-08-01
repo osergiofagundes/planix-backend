@@ -65,7 +65,6 @@ class CardFlowIT extends AuthenticatedIntegrationTest {
         assertThat(cardService.listByList(lista.id()))
                 .extracting(CardResponse::title, CardResponse::position)
                 .containsExactly(tuple("Três", 0), tuple("Um", 1), tuple("Dois", 2));
-        // mover dentro da mesma lista não é mudança de lista: nada no histórico
         assertThat(cardService.listChanges(c1.id())).isEmpty();
 
         boardService.delete(board.id(), "Mesma lista");
@@ -82,7 +81,6 @@ class CardFlowIT extends AuthenticatedIntegrationTest {
                 .extracting(CardChangeResponse::field)
                 .containsExactlyInAnyOrder("title", "priority");
 
-        // reenviar os mesmos valores não cria nada novo
         cardService.update(card.id(), new CardUpdateRequest("Comprar o domínio", null, null, Priority.HIGH));
         assertThat(cardService.listChanges(card.id())).hasSize(2);
 

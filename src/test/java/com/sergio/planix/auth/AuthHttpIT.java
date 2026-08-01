@@ -11,11 +11,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/**
- * O lado HTTP da autenticação, com o contexto completo — só assim os filtros de segurança de
- * verdade entram na jogada. Um {@code @WebMvcTest} não serviria aqui: testar segurança numa fatia
- * que mocka a própria segurança é teatro.
- */
 class AuthHttpIT extends HttpIntegrationTest {
 
     @Test

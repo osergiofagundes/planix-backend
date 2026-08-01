@@ -8,10 +8,6 @@ import lombok.Getter;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 
-/**
- * Metadados do anexo — o conteúdo do arquivo fica em disco. Não estende BaseEntity porque a
- * tabela só tem created_at: um anexo não é "atualizado", ele é trocado por outro.
- */
 @Entity
 @Table(name = "attachments")
 @Getter
@@ -25,10 +21,6 @@ public class Attachment {
     @JoinColumn(name = "card_id")
     private Card card;
 
-    /**
-     * Quem subiu. É contexto, não posse: anexo é conteúdo do cartão, e qualquer pessoa com acesso
-     * ao quadro pode remover — diferente do comentário, que é fala de alguém.
-     */
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id")
     private User author;

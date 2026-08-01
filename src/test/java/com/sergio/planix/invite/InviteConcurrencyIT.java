@@ -19,14 +19,6 @@ import java.util.concurrent.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/**
- * Duas pessoas abrem o mesmo link de 1 uso no mesmo segundo. Exatamente uma entra.
- *
- * <p>Quem garante isso é o {@code UPDATE ... WHERE uses < max_uses} do
- * {@link BoardInviteRepository#consume(Long)}: leitura e escrita viram uma operação só dentro do
- * banco. <b>Para provar que este teste testa alguma coisa</b>, troque o {@code consume} por
- * {@code invite.setUses(invite.getUses() + 1)} e rode de novo — ele tem que falhar.
- */
 class InviteConcurrencyIT extends AuthenticatedIntegrationTest {
 
     @Autowired BoardService boardService;
@@ -48,14 +40,13 @@ class InviteConcurrencyIT extends AuthenticatedIntegrationTest {
             List<Future<Boolean>> tentativas = new ArrayList<>();
             for (User quemTenta : List.of(b, c)) {
                 tentativas.add(pool.submit(() -> {
-                    // O SecurityContextHolder é uma ThreadLocal: cada thread precisa do seu.
                     autenticarComo(quemTenta);
                     try {
                         largada.await();
                         inviteService.accept(convite.token());
                         return true;
                     } catch (NotFoundException e) {
-                        return false;                 // "Convite inválido ou expirado"
+                        return false;
                     } finally {
                         SecurityContextHolder.clearContext();
                     }
@@ -74,6 +65,6 @@ class InviteConcurrencyIT extends AuthenticatedIntegrationTest {
 
         assertThat(inviteRepo.findById(convite.id()).orElseThrow().getUses()).isEqualTo(1);
         assertThat(memberRepo.findByBoardIdOrderByCreatedAtAsc(quadro.id()))
-                .hasSize(2);                          // o dono e exatamente um dos dois
+                .hasSize(2);
     }
 }

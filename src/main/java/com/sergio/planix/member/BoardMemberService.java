@@ -4,6 +4,7 @@ import com.sergio.planix.auth.CurrentUser;
 import com.sergio.planix.auth.dto.UserSummary;
 import com.sergio.planix.board.BoardAccess;
 import com.sergio.planix.board.BoardRepository;
+import com.sergio.planix.card.CardRepository;
 import com.sergio.planix.common.ForbiddenException;
 import com.sergio.planix.common.NotFoundException;
 import org.springframework.stereotype.Service;
@@ -17,20 +18,22 @@ public class BoardMemberService {
 
     private final BoardMemberRepository memberRepo;
     private final BoardRepository boardRepo;
+    private final CardRepository cardRepo;
     private final BoardAccess access;
     private final CurrentUser currentUser;
 
     public BoardMemberService(BoardMemberRepository memberRepo, BoardRepository boardRepo,
-                              BoardAccess access, CurrentUser currentUser) {
+                              CardRepository cardRepo, BoardAccess access, CurrentUser currentUser) {
         this.memberRepo = memberRepo;
         this.boardRepo = boardRepo;
+        this.cardRepo = cardRepo;
         this.access = access;
         this.currentUser = currentUser;
     }
 
     @Transactional(readOnly = true)
     public List<UserSummary> list(Long boardId) {
-        access.requireMember(boardId);          // qualquer membro vê quem mais está no quadro
+        access.requireMember(boardId);
         return memberRepo.findByBoardIdOrderByCreatedAtAsc(boardId).stream()
                 .map(m -> UserSummary.from(m.getUser())).toList();
     }
@@ -43,6 +46,7 @@ public class BoardMemberService {
         BoardMember member = memberRepo.findByBoardIdAndUserId(boardId, userId)
                 .orElseThrow(() -> new NotFoundException(
                         "Usuário %d não é membro do quadro %d".formatted(userId, boardId)));
+        cardRepo.deleteAssigneesOfUserInBoard(boardId, userId);
         memberRepo.delete(member);
     }
 
@@ -52,6 +56,7 @@ public class BoardMemberService {
             throw new ForbiddenException(
                     "O dono não pode sair do próprio quadro. Exclua o quadro, se for o caso.");
         }
+        cardRepo.deleteAssigneesOfUserInBoard(boardId, currentUser.id());
         memberRepo.deleteByBoardIdAndUserId(boardId, currentUser.id());
     }
 }

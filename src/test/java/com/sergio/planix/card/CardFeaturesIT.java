@@ -25,7 +25,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.tuple;
 
-/** Etiquetas (N:N), checklist, comentários e links — o conteúdo do capítulo 07. */
 class CardFeaturesIT extends AuthenticatedIntegrationTest {
 
     @Autowired BoardService boardService;
@@ -49,14 +48,14 @@ class CardFeaturesIT extends AuthenticatedIntegrationTest {
         labelService.attach(card.id(), bug.id());
         assertThat(cardService.get(card.id()).labels())
                 .extracting(LabelResponse::name)
-                .containsExactly("Bug", "Urgente");          // ordenadas por nome na resposta
+                .containsExactly("Bug", "Urgente");
 
         labelService.detach(card.id(), bug.id());
         assertThat(cardService.get(card.id()).labels())
                 .extracting(LabelResponse::name)
                 .containsExactly("Urgente");
 
-        labelService.delete(urgente.id());                   // some do cartão via cascade
+        labelService.delete(urgente.id());
         assertThat(cardService.get(card.id()).labels()).isEmpty();
         assertThat(cardService.get(card.id()).title()).isEqualTo("Comprar domínio");
 

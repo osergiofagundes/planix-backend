@@ -25,13 +25,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.assertj.core.api.Assertions.tuple;
 
-/**
- * O convite ponta a ponta: quem entra passa a enxergar o quadro e a mexer no conteúdo, mas o quadro
- * em si continua sendo do dono.
- *
- * <p>O usuário do {@code @BeforeEach} é o A (dono); os outros entram com
- * {@code autenticarComo(criarUsuario())}.
- */
 class BoardInviteFlowIT extends AuthenticatedIntegrationTest {
 
     @Autowired BoardService boardService;
@@ -45,19 +38,19 @@ class BoardInviteFlowIT extends AuthenticatedIntegrationTest {
         BoardResponse quadro = boardService.create(new BoardRequest("Compartilhado", null));
         InviteCreatedResponse convite = inviteService.create(quadro.id(), new InviteRequest(null, null));
 
-        autenticarComo(criarUsuario());                                  // agora somos o B
+        autenticarComo(criarUsuario());
         assertThatThrownBy(() -> boardService.get(quadro.id()))
-                .isInstanceOf(NotFoundException.class);                  // antes de entrar: 404
+                .isInstanceOf(NotFoundException.class);
 
         assertThat(inviteService.accept(convite.token()).id()).isEqualTo(quadro.id());
 
         assertThat(boardService.list()).extracting(BoardResponse::id).contains(quadro.id());
 
         BoardListResponse lista = listService.create(quadro.id(), new BoardListRequest("A Fazer"));
-        cardService.create(lista.id(), new CardCreateRequest("Cartão do B"));   // conteúdo: pode
+        cardService.create(lista.id(), new CardCreateRequest("Cartão do B"));
 
         assertThatThrownBy(() -> boardService.update(quadro.id(), new BoardRequest("Meu agora", null)))
-                .isInstanceOf(ForbiddenException.class);                 // o quadro: não
+                .isInstanceOf(ForbiddenException.class);
         assertThatThrownBy(() -> boardService.delete(quadro.id(), "Compartilhado"))
                 .isInstanceOf(ForbiddenException.class);
         assertThatThrownBy(() -> inviteService.create(quadro.id(), new InviteRequest(null, null)))
@@ -72,7 +65,7 @@ class BoardInviteFlowIT extends AuthenticatedIntegrationTest {
         autenticarComo(criarUsuario());
         inviteService.accept(convite.token());
 
-        autenticarComo(criarUsuario());                                  // o C, com o mesmo link
+        autenticarComo(criarUsuario());
         assertThatThrownBy(() -> inviteService.accept(convite.token()))
                 .isInstanceOf(NotFoundException.class)
                 .hasMessage("Convite inválido ou expirado");
@@ -85,7 +78,7 @@ class BoardInviteFlowIT extends AuthenticatedIntegrationTest {
 
         autenticarComo(criarUsuario());
         inviteService.accept(convite.token());
-        inviteService.accept(convite.token());          // já é membro: devolve o quadro e para aí
+        inviteService.accept(convite.token());
 
         assertThat(inviteRepo.findById(convite.id()).orElseThrow().getUses()).isEqualTo(1);
     }
@@ -99,10 +92,10 @@ class BoardInviteFlowIT extends AuthenticatedIntegrationTest {
         autenticarComo(b);
         inviteService.accept(convite.token());
 
-        autenticarComo(usuarioLogado);                                   // voltamos a ser o A
+        autenticarComo(usuarioLogado);
         inviteService.revoke(convite.id());
 
-        autenticarComo(criarUsuario());                                  // o C chega depois
+        autenticarComo(criarUsuario());
         assertThatThrownBy(() -> inviteService.accept(convite.token()))
                 .isInstanceOf(NotFoundException.class);
 
@@ -125,7 +118,7 @@ class BoardInviteFlowIT extends AuthenticatedIntegrationTest {
                 .hasMessage("Convite inválido ou expirado");
         assertThatThrownBy(() -> inviteService.accept("token-que-nunca-existiu"))
                 .isInstanceOf(NotFoundException.class)
-                .hasMessage("Convite inválido ou expirado");             // a mesma frase, de propósito
+                .hasMessage("Convite inválido ou expirado");
     }
 
     @Test
@@ -153,6 +146,6 @@ class BoardInviteFlowIT extends AuthenticatedIntegrationTest {
         autenticarComo(criarUsuario());
         inviteService.accept(convite.token());
         assertThatThrownBy(() -> inviteService.list(quadro.id()))
-                .isInstanceOf(ForbiddenException.class);                 // membro não vê convites
+                .isInstanceOf(ForbiddenException.class);
     }
 }

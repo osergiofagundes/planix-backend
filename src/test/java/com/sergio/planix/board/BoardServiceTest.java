@@ -17,15 +17,12 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-/** Regra de negócio da exclusão de quadro e da troca de dono, isoladas do banco com mocks. */
 class BoardServiceTest {
 
     private final BoardRepository repo = mock(BoardRepository.class);
     private final BoardListRepository listRepo = mock(BoardListRepository.class);
     private final BoardMemberRepository memberRepo = mock(BoardMemberRepository.class);
     private final UserRepository userRepo = mock(UserRepository.class);
-    // Os métodos de acesso são void: o mock não faz nada, ou seja, autoriza. É o que estes
-    // testes querem — aqui a regra sob teste é a confirmação pelo nome, não a autorização.
     private final BoardAccess access = mock(BoardAccess.class);
     private final CurrentUser currentUser = mock(CurrentUser.class);
     private final BoardService service =
@@ -42,7 +39,7 @@ class BoardServiceTest {
         assertThatThrownBy(() -> service.delete(1L, null))
                 .isInstanceOf(BoardNotEmptyException.class);
 
-        verify(repo, never()).delete(any());   // não pode ter apagado
+        verify(repo, never()).delete(any());
     }
 
     @Test
@@ -98,7 +95,7 @@ class BoardServiceTest {
         assertThatThrownBy(() -> service.transferOwnership(1L, 99L))
                 .isInstanceOf(NotFoundException.class);
 
-        assertThat(board.getOwner()).isSameAs(DONO);   // o quadro não trocou de mãos
+        assertThat(board.getOwner()).isSameAs(DONO);
     }
 
     @Test
@@ -123,6 +120,6 @@ class BoardServiceTest {
         service.transferOwnership(1L, 2L);
 
         assertThat(board.getOwner()).isSameAs(novoDono);
-        verify(memberRepo, never()).delete(any());     // o dono antigo continua membro
+        verify(memberRepo, never()).delete(any());
     }
 }

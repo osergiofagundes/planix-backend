@@ -21,7 +21,6 @@ import java.nio.file.Path;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-/** Upload/download: o arquivo vai para o disco e o banco guarda só os metadados. */
 class AttachmentFlowIT extends AuthenticatedIntegrationTest {
 
     @Autowired BoardService boardService;

@@ -12,10 +12,6 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-/**
- * A matriz do capítulo 13 por HTTP, com a cadeia de filtros de produção: o que o membro pode, o que
- * só o dono pode (403) e o que nem existe para quem está de fora (404).
- */
 class CollaborationHttpIT extends HttpIntegrationTest {
 
     private static final MediaType JSON = MediaType.APPLICATION_JSON;
@@ -28,7 +24,6 @@ class CollaborationHttpIT extends HttpIntegrationTest {
 
         int quadro = criarQuadro(a, "Compartilhado");
 
-        // O token do convite aparece uma vez, na criação...
         String convite = JsonPath.read(
                 mvc.perform(post("/api/boards/{id}/invites", quadro).with(comToken(a))
                                 .contentType(JSON).content("{\"maxUses\":1}"))
@@ -38,14 +33,12 @@ class CollaborationHttpIT extends HttpIntegrationTest {
                         .andReturn().getResponse().getContentAsString(),
                 "$.token");
 
-        // ...e nunca mais.
         mvc.perform(get("/api/boards/{id}/invites", quadro).with(comToken(a)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].uses").value(0))
                 .andExpect(jsonPath("$[0].maxUses").value(1))
                 .andExpect(jsonPath("$[0].token").doesNotExist());
 
-        // Antes de aceitar, o quadro nem existe do ponto de vista do B.
         mvc.perform(get("/api/boards/{id}", quadro).with(comToken(b)))
                 .andExpect(status().isNotFound());
 
@@ -64,7 +57,6 @@ class CollaborationHttpIT extends HttpIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[*].id", hasItem(quadro)));
 
-        // Membro mexe no conteúdo à vontade: cria e apaga listas e cartões.
         int lista = idDe(mvc.perform(post("/api/boards/{id}/lists", quadro).with(comToken(b))
                         .contentType(JSON).content("{\"name\":\"A Fazer\"}"))
                 .andExpect(status().isCreated()));
@@ -74,7 +66,6 @@ class CollaborationHttpIT extends HttpIntegrationTest {
         mvc.perform(delete("/api/cards/{id}", cartao).with(comToken(b)))
                 .andExpect(status().isNoContent());
 
-        // O quadro em si continua sendo do dono — 403 com o corpo ApiError de sempre.
         mvc.perform(put("/api/boards/{id}", quadro).with(comToken(b))
                         .contentType(JSON).content("{\"name\":\"Meu agora\"}"))
                 .andExpect(status().isForbidden())
@@ -87,18 +78,15 @@ class CollaborationHttpIT extends HttpIntegrationTest {
                         .contentType(JSON).content("{}"))
                 .andExpect(status().isForbidden());
 
-        // Link de 1 uso já gasto: o C não descobre em qual dos quatro motivos caiu.
         mvc.perform(post("/api/invites/accept").with(comToken(c)).contentType(JSON)
                         .content(corpoDoToken(convite)))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.message").value("Convite inválido ou expirado"));
 
-        // Qualquer membro vê quem mais está no quadro.
         mvc.perform(get("/api/boards/{id}/members", quadro).with(comToken(b)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.length()").value(2));
 
-        // O membro sai; o dono, não.
         mvc.perform(delete("/api/boards/{id}/members/me", quadro).with(comToken(b)))
                 .andExpect(status().isNoContent());
         mvc.perform(get("/api/boards").with(comToken(b)))
@@ -134,7 +122,6 @@ class CollaborationHttpIT extends HttpIntegrationTest {
         return JsonPath.read(resultado.andReturn().getResponse().getContentAsString(), "$.id");
     }
 
-    /** O token vai no corpo, nunca na URL. */
     private static String corpoDoToken(String token) {
         return "{\"token\":\"%s\"}".formatted(token);
     }

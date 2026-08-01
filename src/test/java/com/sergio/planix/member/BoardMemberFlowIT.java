@@ -5,6 +5,7 @@ import com.sergio.planix.auth.dto.UserSummary;
 import com.sergio.planix.board.BoardService;
 import com.sergio.planix.board.dto.BoardRequest;
 import com.sergio.planix.board.dto.BoardResponse;
+import com.sergio.planix.card.CardAssigneeService;
 import com.sergio.planix.card.CardService;
 import com.sergio.planix.card.dto.CardCreateRequest;
 import com.sergio.planix.card.dto.CardResponse;
@@ -20,14 +21,11 @@ import com.sergio.planix.support.AuthenticatedIntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.List;
+
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
-/**
- * A outra metade do capítulo: quem está dentro, quem sai e quem manda. As duas guardas testadas
- * aqui protegem a mesma invariante pelos dois lados — <b>o dono sempre tem linha em
- * board_members</b>: ninguém tira o dono, e o dono não se tira.
- */
 class BoardMemberFlowIT extends AuthenticatedIntegrationTest {
 
     @Autowired BoardService boardService;
@@ -35,14 +33,14 @@ class BoardMemberFlowIT extends AuthenticatedIntegrationTest {
     @Autowired BoardInviteService inviteService;
     @Autowired BoardListService listService;
     @Autowired CardService cardService;
+    @Autowired CardAssigneeService assigneeService;
 
-    /** Cria um quadro do A, convida, e devolve o B já membro. */
     private User quadroComMembro(BoardResponse quadro) {
         InviteCreatedResponse convite = inviteService.create(quadro.id(), new InviteRequest(null, 1));
         User b = criarUsuario();
         autenticarComo(b);
         inviteService.accept(convite.token());
-        autenticarComo(usuarioLogado);      // volta a ser o A
+        autenticarComo(usuarioLogado);
         return b;
     }
 
@@ -63,7 +61,7 @@ class BoardMemberFlowIT extends AuthenticatedIntegrationTest {
         autenticarComo(b);
         assertThat(memberService.list(quadro.id()))
                 .extracting(UserSummary::id)
-                .containsExactly(usuarioLogado.getId(), b.getId());   // ordem de entrada
+                .containsExactly(usuarioLogado.getId(), b.getId());
     }
 
     @Test
@@ -109,7 +107,7 @@ class BoardMemberFlowIT extends AuthenticatedIntegrationTest {
 
         autenticarComo(b);
         assertThatThrownBy(() -> memberService.remove(quadro.id(), usuarioLogado.getId()))
-                .isInstanceOf(ForbiddenException.class);   // membro nem chega a tentar remover
+                .isInstanceOf(ForbiddenException.class);
     }
 
     @Test
@@ -129,7 +127,6 @@ class BoardMemberFlowIT extends AuthenticatedIntegrationTest {
         BoardResponse depois = boardService.transferOwnership(quadro.id(), b.getId());
         assertThat(depois.owner().id()).isEqualTo(b.getId());
 
-        // o A continua membro: transferir não é expulsar
         assertThat(boardService.list()).extracting(BoardResponse::id).contains(quadro.id());
         assertThatThrownBy(() -> boardService.update(quadro.id(), new BoardRequest("Meu de novo", null)))
                 .isInstanceOf(ForbiddenException.class);
@@ -137,7 +134,43 @@ class BoardMemberFlowIT extends AuthenticatedIntegrationTest {
         autenticarComo(b);
         assertThat(boardService.update(quadro.id(), new BoardRequest("Do B agora", null)).name())
                 .isEqualTo("Do B agora");
-        memberService.remove(quadro.id(), usuarioLogado.getId());   // e agora o B é quem manda
+        memberService.remove(quadro.id(), usuarioLogado.getId());
+    }
+
+    @Test
+    void removerMembro_tiraONomeDeleDosCartoesEmQueEraResponsavel() {
+        BoardResponse quadro = boardService.create(new BoardRequest("Faxina", null));
+        User b = quadroComMembro(quadro);
+        BoardListResponse lista = listService.create(quadro.id(), new BoardListRequest("A Fazer"));
+
+        List<Long> cartoes = List.of(
+                cardService.create(lista.id(), new CardCreateRequest("Um")).id(),
+                cardService.create(lista.id(), new CardCreateRequest("Dois")).id(),
+                cardService.create(lista.id(), new CardCreateRequest("Três")).id());
+        cartoes.forEach(id -> assigneeService.assign(id, b.getId()));
+
+        memberService.remove(quadro.id(), b.getId());
+
+        for (Long id : cartoes) {
+            CardResponse cartao = cardService.get(id);
+            assertThat(cartao.assignees()).isEmpty();
+            assertThat(cartao.title()).isNotBlank();
+        }
+    }
+
+    @Test
+    void membroQueSaiSozinho_tambemDeixaDeSerResponsavel() {
+        BoardResponse quadro = boardService.create(new BoardRequest("Saída", null));
+        User b = quadroComMembro(quadro);
+        BoardListResponse lista = listService.create(quadro.id(), new BoardListRequest("A Fazer"));
+        Long cartao = cardService.create(lista.id(), new CardCreateRequest("Sozinho")).id();
+        assigneeService.assign(cartao, b.getId());
+
+        autenticarComo(b);
+        memberService.leave(quadro.id());
+
+        autenticarComo(usuarioLogado);
+        assertThat(cardService.get(cartao).assignees()).isEmpty();
     }
 
     @Test
