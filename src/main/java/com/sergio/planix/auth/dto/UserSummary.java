@@ -6,10 +6,13 @@ import io.swagger.v3.oas.annotations.media.Schema;
 @Schema(description = "Referência resumida a um usuário. Sem e-mail, de propósito.")
 public record UserSummary(
         @Schema(description = "Id do usuário", example = "1") Long id,
-        @Schema(description = "Nome de exibição", example = "Sérgio Fagundes") String name
+        @Schema(description = "Nome de exibição", example = "Sérgio Fagundes") String name,
+        @Schema(description = "Onde baixar a foto de perfil. `null` quando não há foto.",
+                example = "/api/users/1/avatar") String avatarUrl
 ) {
 
     public static UserSummary from(User user) {
-        return user == null ? null : new UserSummary(user.getId(), user.getName());
+        return user == null ? null
+                : new UserSummary(user.getId(), user.getName(), AvatarUrl.of(user));
     }
 }

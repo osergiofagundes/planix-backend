@@ -1,6 +1,7 @@
 package com.sergio.planix.attachment;
 
 import com.sergio.planix.attachment.dto.AttachmentResponse;
+import com.sergio.planix.storage.FileStorageService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;

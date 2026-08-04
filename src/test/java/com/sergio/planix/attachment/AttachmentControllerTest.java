@@ -3,6 +3,7 @@ package com.sergio.planix.attachment;
 import com.sergio.planix.auth.CurrentUser;
 import com.sergio.planix.auth.JwtService;
 import com.sergio.planix.common.NotFoundException;
+import com.sergio.planix.storage.FileStorageService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;

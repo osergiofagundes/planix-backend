@@ -1,4 +1,4 @@
-package com.sergio.planix.attachment;
+package com.sergio.planix.storage;
 
 import com.sergio.planix.common.StorageException;
 import org.springframework.core.io.Resource;
@@ -12,6 +12,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
 
+/**
+ * Guarda arquivos no disco, sempre dentro de uma {@link StorageFolder}. O que sobe para o banco é
+ * o caminho relativo à raiz de uploads — {@code "documents/<uuid>.pdf"} —, nunca o caminho absoluto.
+ */
 @Service
 public class FileStorageService {
 
@@ -19,15 +23,14 @@ public class FileStorageService {
 
     public FileStorageService(Path uploadDir) { this.uploadDir = uploadDir; }
 
-    public String store(MultipartFile file) {
+    public String store(MultipartFile file, StorageFolder folder) {
         if (file.isEmpty()) throw new StorageException("Arquivo vazio", null);
+
         String ext = getExtension(file.getOriginalFilename());
-        String stored = UUID.randomUUID() + (ext.isEmpty() ? "" : "." + ext);
+        String stored = folder.path() + "/" + UUID.randomUUID() + (ext.isEmpty() ? "" : "." + ext);
         try {
-            Path target = uploadDir.resolve(stored).normalize();
-            if (!target.getParent().equals(uploadDir)) {
-                throw new StorageException("Caminho inválido", null);
-            }
+            Path target = resolve(stored);
+            Files.createDirectories(target.getParent());
             file.transferTo(target);
             return stored;
         } catch (IOException e) {
@@ -35,13 +38,9 @@ public class FileStorageService {
         }
     }
 
-    public Resource loadAsResource(String storedFilename) {
+    public Resource loadAsResource(String storedPath) {
         try {
-            Path file = uploadDir.resolve(storedFilename).normalize();
-            if (!file.getParent().equals(uploadDir)) {
-                throw new StorageException("Caminho inválido", null);
-            }
-            Resource resource = new UrlResource(file.toUri());
+            Resource resource = new UrlResource(resolve(storedPath).toUri());
             if (!resource.exists() || !resource.isReadable()) {
                 throw new StorageException("Arquivo não encontrado no disco", null);
             }
@@ -51,16 +50,24 @@ public class FileStorageService {
         }
     }
 
-    public void delete(String storedFilename) {
+    public void delete(String storedPath) {
         try {
-            Path file = uploadDir.resolve(storedFilename).normalize();
-            if (!file.getParent().equals(uploadDir)) {
-                throw new StorageException("Caminho inválido", null);
-            }
-            Files.deleteIfExists(file);
+            Files.deleteIfExists(resolve(storedPath));
         } catch (IOException e) {
             throw new StorageException("Falha ao apagar o arquivo", e);
         }
+    }
+
+    /**
+     * Resolve o caminho relativo dentro da raiz de uploads. O {@code startsWith} é o que impede
+     * uma fuga com {@code ..} — e, diferente de comparar o pai com a raiz, aceita subpastas.
+     */
+    private Path resolve(String storedPath) {
+        Path target = uploadDir.resolve(storedPath).normalize();
+        if (!target.startsWith(uploadDir)) {
+            throw new StorageException("Caminho inválido", null);
+        }
+        return target;
     }
 
     private String getExtension(String filename) {

@@ -8,9 +8,11 @@ import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.multipart.MaxUploadSizeExceededException;
 
 import java.time.OffsetDateTime;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -29,6 +31,19 @@ public class GlobalExceptionHandler {
             fields.put(fe.getField(), fe.getDefaultMessage());
         }
         return build(HttpStatus.BAD_REQUEST, "Dados inválidos", req, fields);
+    }
+
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ApiError> handleTypeMismatch(MethodArgumentTypeMismatchException ex,
+                                                       HttpServletRequest req) {
+        Class<?> tipo = ex.getRequiredType();
+        String esperado = tipo != null && tipo.isEnum()
+                ? " Valores aceitos: " + String.join(", ",
+                        Arrays.stream(tipo.getEnumConstants()).map(Object::toString).toList()) + "."
+                : "";
+
+        return build(HttpStatus.BAD_REQUEST,
+                "Valor inválido para \"%s\".%s".formatted(ex.getName(), esperado), req, null);
     }
 
     private ResponseEntity<ApiError> build(HttpStatus status, String message, HttpServletRequest req, Map<String, String> fields) {
@@ -56,6 +71,12 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<ApiError> handleMaxUploadSize(MaxUploadSizeExceededException ex, HttpServletRequest req) {
         return build(HttpStatus.PAYLOAD_TOO_LARGE, "Arquivo maior que o limite permitido", req, null);
+    }
+
+    @ExceptionHandler(UnsupportedFileTypeException.class)
+    public ResponseEntity<ApiError> handleUnsupportedFileType(UnsupportedFileTypeException ex,
+                                                             HttpServletRequest req) {
+        return build(HttpStatus.UNSUPPORTED_MEDIA_TYPE, ex.getMessage(), req, null);
     }
 
     @ExceptionHandler(EmailAlreadyUsedException.class)

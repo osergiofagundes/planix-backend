@@ -6,6 +6,8 @@ import com.sergio.planix.board.BoardAccess;
 import com.sergio.planix.card.Card;
 import com.sergio.planix.card.CardAccess;
 import com.sergio.planix.common.NotFoundException;
+import com.sergio.planix.storage.FileStorageService;
+import com.sergio.planix.storage.StorageFolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -39,7 +41,7 @@ public class AttachmentService {
 
     public AttachmentResponse upload(Long cardId, MultipartFile file) {
         Card card = cardAccess.require(cardId);
-        String stored = storage.store(file);
+        String stored = storage.store(file, StorageFolder.DOCUMENTS);
         Attachment a = new Attachment(card, currentUser.reference(), file.getOriginalFilename(),
                 stored, file.getContentType(), file.getSize());
         return AttachmentResponse.from(repo.save(a));
