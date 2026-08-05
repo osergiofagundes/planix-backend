@@ -12,10 +12,6 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.UUID;
 
-/**
- * Guarda arquivos no disco, sempre dentro de uma {@link StorageFolder}. O que sobe para o banco é
- * o caminho relativo à raiz de uploads — {@code "documents/<uuid>.pdf"} —, nunca o caminho absoluto.
- */
 @Service
 public class FileStorageService {
 
@@ -58,10 +54,6 @@ public class FileStorageService {
         }
     }
 
-    /**
-     * Resolve o caminho relativo dentro da raiz de uploads. O {@code startsWith} é o que impede
-     * uma fuga com {@code ..} — e, diferente de comparar o pai com a raiz, aceita subpastas.
-     */
     private Path resolve(String storedPath) {
         Path target = uploadDir.resolve(storedPath).normalize();
         if (!target.startsWith(uploadDir)) {

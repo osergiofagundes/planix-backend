@@ -24,7 +24,6 @@ import java.util.Set;
 @Transactional
 public class ProfileService {
 
-    /** Bem abaixo do limite global de 10 MB: foto de perfil não precisa de mais que isso. */
     static final long MAX_AVATAR_BYTES = 2L * 1024 * 1024;
 
     private static final Set<String> TIPOS_DE_IMAGEM =
@@ -48,10 +47,6 @@ public class ProfileService {
         return toResponse(usuarioAtual());
     }
 
-    /**
-     * PUT de verdade: o que não vier no corpo é apagado. É assim que o usuário "remove" uma
-     * informação, sem precisar de um endpoint por campo.
-     */
     public ProfileResponse update(ProfileRequest req) {
         User user = usuarioAtual();
         user.setName(req.name().trim());
@@ -90,7 +85,6 @@ public class ProfileService {
         storage.delete(atual);
     }
 
-    /** A foto de qualquer usuário — é o que faz o avatar aparecer ao lado do nome nos quadros. */
     @Transactional(readOnly = true)
     public Resource avatarOf(Long userId) {
         User user = userRepo.findById(userId)
@@ -125,7 +119,6 @@ public class ProfileService {
         return tudoVazio ? null : address;
     }
 
-    /** String em branco e ausência são a mesma coisa aqui: o banco guarda só {@code null}. */
     private static String vazioViraNulo(String value) {
         if (value == null) return null;
         String trimmed = value.trim();

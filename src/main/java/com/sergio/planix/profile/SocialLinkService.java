@@ -25,10 +25,6 @@ public class SocialLinkService {
                 .stream().map(SocialLinkResponse::from).toList();
     }
 
-    /**
-     * Cria ou atualiza — cada usuário tem no máximo uma URL por rede, garantido pela
-     * {@code UNIQUE (user_id, platform)}. Por isso é PUT, e não POST.
-     */
     public SocialLinkResponse upsert(SocialPlatform platform, String url) {
         SocialLink link = repo.findByUserIdAndPlatform(currentUser.id(), platform)
                 .orElseGet(() -> repo.save(new SocialLink(currentUser.reference(), platform, url)));
