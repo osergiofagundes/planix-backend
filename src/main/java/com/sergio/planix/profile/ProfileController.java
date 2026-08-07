@@ -43,8 +43,8 @@ public class ProfileController {
                        Substitui o perfil inteiro. Campo que vier `null` — ou que você simplesmente
                        omitir — é **apagado**: é assim que se remove uma informação.
 
-                       Só o `name` é obrigatório. E-mail e senha não mudam por aqui, e a foto tem
-                       endpoint próprio.""")
+                       Só o `name` é obrigatório. A foto tem endpoint próprio, e as credenciais
+                       também: `PUT /api/me/email` e `PUT /api/me/password`.""")
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "Perfil atualizado"),
             @ApiResponse(responseCode = "400", description = "Dados inválidos (veja `fieldErrors`)")

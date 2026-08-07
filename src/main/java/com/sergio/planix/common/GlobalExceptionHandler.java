@@ -33,6 +33,12 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.BAD_REQUEST, "Dados inválidos", req, fields);
     }
 
+    @ExceptionHandler(InvalidFieldException.class)
+    public ResponseEntity<ApiError> handleInvalidField(InvalidFieldException ex, HttpServletRequest req) {
+        return build(HttpStatus.BAD_REQUEST, "Dados inválidos", req,
+                     Map.of(ex.getField(), ex.getMessage()));
+    }
+
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ApiError> handleTypeMismatch(MethodArgumentTypeMismatchException ex,
                                                        HttpServletRequest req) {

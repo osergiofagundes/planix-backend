@@ -11,7 +11,8 @@ import java.time.LocalDate;
 
 @Schema(description = """
         Dados do perfil. É um PUT: o que vier `null` (ou for omitido) **apaga** o valor guardado.
-        Só o nome é obrigatório. E-mail e senha não se trocam por aqui.""")
+        Só o nome é obrigatório. E-mail e senha se trocam em `PUT /api/me/email` e
+        `PUT /api/me/password`, que pedem a senha atual.""")
 public record ProfileRequest(
 
         @Schema(description = "Nome de exibição", example = "Sérgio Fagundes")

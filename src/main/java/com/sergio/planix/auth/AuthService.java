@@ -13,7 +13,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.time.OffsetDateTime;
-import java.util.Locale;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -42,7 +41,7 @@ public class AuthService {
     }
 
     public AuthResponse register(RegisterRequest req) {
-        String email = normalize(req.email());
+        String email = Emails.normalize(req.email());
         if (userRepo.existsByEmail(email)) {
             throw new EmailAlreadyUsedException("Já existe uma conta com o e-mail " + email);
         }
@@ -51,7 +50,7 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest req) {
-        Optional<User> found = userRepo.findByEmail(normalize(req.email()));
+        Optional<User> found = userRepo.findByEmail(Emails.normalize(req.email()));
 
         String hash = found.map(User::getPasswordHash).orElse(dummyHash);
         boolean senhaConfere = encoder.matches(req.password(), hash);
@@ -95,6 +94,11 @@ public class AuthService {
                 .orElseThrow(() -> new NotFoundException("Usuário não encontrado"));
     }
 
+    AuthResponse rotateSessions(User user) {
+        refreshRepo.revokeAllOf(user.getId(), OffsetDateTime.now());
+        return issueTokens(user);
+    }
+
     private AuthResponse issueTokens(User user) {
         String refreshValue = Tokens.random();
 
@@ -107,9 +111,5 @@ public class AuthService {
                 jwtService.generateAccessToken(user),
                 refreshValue,
                 jwtService.accessTtl().toSeconds());
-    }
-
-    private static String normalize(String email) {
-        return email.trim().toLowerCase(Locale.ROOT);
     }
 }
