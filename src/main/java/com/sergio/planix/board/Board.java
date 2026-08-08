@@ -22,11 +22,15 @@ public class Board extends BaseEntity {
     @Column(columnDefinition = "text")
     private String description;
 
+    @Column(name = "icon", length = 50)
+    private String icon;
+
     protected Board() {}
 
-    public Board(User owner, String name, String description) {
+    public Board(User owner, String name, String description, String icon) {
         this.owner = owner;
         this.name = name;
         this.description = description;
+        this.icon = icon;
     }
 }

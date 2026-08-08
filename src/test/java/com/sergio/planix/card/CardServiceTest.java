@@ -115,7 +115,7 @@ class CardServiceTest {
     }
 
     private static Board board(Long id) {
-        Board board = new Board(new User("Dono", "dono@planix.test", "hash"), "Quadro", null);
+        Board board = new Board(new User("Dono", "dono@planix.test", "hash"), "Quadro", null, null);
         board.setId(id);
         return board;
     }

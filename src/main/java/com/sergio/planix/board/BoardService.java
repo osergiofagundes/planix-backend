@@ -49,7 +49,7 @@ public class BoardService {
 
     public BoardResponse create(BoardRequest req) {
         User me = currentUser.reference();
-        Board saved = repo.save(new Board(me, req.name(), req.description()));
+        Board saved = repo.save(new Board(me, req.name(), req.description(), req.icon()));
         memberRepo.save(new BoardMember(saved, me));
         return BoardResponse.from(saved);
     }
@@ -59,6 +59,7 @@ public class BoardService {
         Board board = findOrThrow(id);
         board.setName(req.name());
         board.setDescription(req.description());
+        board.setIcon(req.icon());
         return BoardResponse.from(board);
     }
 

@@ -32,7 +32,7 @@ class BoardServiceTest {
 
     @Test
     void excluirQuadroComConteudoSemConfirmacao_lancaExcecao() {
-        Board board = new Board(DONO, "Estudos", null);
+        Board board = new Board(DONO, "Estudos", null, null);
         when(repo.findById(1L)).thenReturn(Optional.of(board));
         when(listRepo.existsByBoardId(1L)).thenReturn(true);
 
@@ -44,7 +44,7 @@ class BoardServiceTest {
 
     @Test
     void excluirQuadroComConteudoComNomeErrado_lancaExcecao() {
-        Board board = new Board(DONO, "Estudos", null);
+        Board board = new Board(DONO, "Estudos", null, null);
         when(repo.findById(1L)).thenReturn(Optional.of(board));
         when(listRepo.existsByBoardId(1L)).thenReturn(true);
 
@@ -56,7 +56,7 @@ class BoardServiceTest {
 
     @Test
     void excluirQuadroComConteudoComNomeCorreto_apaga() {
-        Board board = new Board(DONO, "Estudos", null);
+        Board board = new Board(DONO, "Estudos", null, null);
         when(repo.findById(1L)).thenReturn(Optional.of(board));
         when(listRepo.existsByBoardId(1L)).thenReturn(true);
 
@@ -67,7 +67,7 @@ class BoardServiceTest {
 
     @Test
     void excluirQuadroVazio_naoExigeConfirmacao() {
-        Board board = new Board(DONO, "Estudos", null);
+        Board board = new Board(DONO, "Estudos", null, null);
         when(repo.findById(1L)).thenReturn(Optional.of(board));
         when(listRepo.existsByBoardId(1L)).thenReturn(false);
 
@@ -88,7 +88,7 @@ class BoardServiceTest {
 
     @Test
     void transferirPosseParaQuemNaoEMembro_lancaNaoEncontrado() {
-        Board board = new Board(DONO, "Estudos", null);
+        Board board = new Board(DONO, "Estudos", null, null);
         when(repo.findById(1L)).thenReturn(Optional.of(board));
         when(memberRepo.existsByBoardIdAndUserId(1L, 99L)).thenReturn(false);
 
@@ -111,7 +111,7 @@ class BoardServiceTest {
 
     @Test
     void transferirPosseParaMembro_trocaODono() {
-        Board board = new Board(DONO, "Estudos", null);
+        Board board = new Board(DONO, "Estudos", null, null);
         User novoDono = new User("Novo", "novo@planix.test", "hash");
         when(repo.findById(1L)).thenReturn(Optional.of(board));
         when(memberRepo.existsByBoardIdAndUserId(1L, 2L)).thenReturn(true);

@@ -69,7 +69,7 @@ class BoardListServiceTest {
     }
 
     private static Board board() {
-        Board board = new Board(new User("Dono", "dono@planix.test", "hash"), "Quadro", null);
+        Board board = new Board(new User("Dono", "dono@planix.test", "hash"), "Quadro", null, null);
         board.setId(1L);
         return board;
     }

@@ -11,5 +11,12 @@ public record BoardRequest(
 
         @Schema(description = "Descrição livre. Opcional.",
                 example = "Tudo que precisa sair antes de colocar o site no ar.")
-        @Size(max = 2000) String description
-) {}
+        @Size(max = 2000) String description,
+
+        @Schema(description = "Chave do ícone do quadro. Opcional.", example = "rocket")
+        @Size(max = 50) String icon
+) {
+    public BoardRequest(String name, String description) {
+        this(name, description, null);
+    }
+}
