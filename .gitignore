@@ -40,3 +40,6 @@ build/
 
 ### Segredos locais (o .env.example fica versionado) ###
 .env
+
+### Dumps gerados por scripts/backup.ps1 ###
+/backups/

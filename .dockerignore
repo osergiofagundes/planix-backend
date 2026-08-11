@@ -6,6 +6,8 @@ target/
 mvnw
 mvnw.cmd
 uploads/
+backups/
+scripts/
 docs/
 HELP.md
 Dockerfile
