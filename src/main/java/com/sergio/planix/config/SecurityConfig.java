@@ -1,7 +1,7 @@
 package com.sergio.planix.config;
 
 import com.sergio.planix.auth.JwtAuthFilter;
-import com.sergio.planix.common.ApiError;
+import com.sergio.planix.common.dto.ApiError;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;

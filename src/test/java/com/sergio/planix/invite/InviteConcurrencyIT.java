@@ -1,7 +1,7 @@
 package com.sergio.planix.invite;
 
 import com.sergio.planix.auth.User;
-import com.sergio.planix.common.NotFoundException;
+import com.sergio.planix.common.exception.NotFoundException;
 import com.sergio.planix.invite.dto.InviteCreatedResponse;
 import com.sergio.planix.invite.dto.InviteRequest;
 import com.sergio.planix.support.AuthenticatedIntegrationTest;

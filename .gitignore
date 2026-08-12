@@ -32,7 +32,7 @@ build/
 ### VS Code ###
 .vscode/
 
-/docs
+### Notas pessoais (a documentação em /docs é versionada)
 /docs/ideias.md
 
 ### Anexos enviados pela API ###

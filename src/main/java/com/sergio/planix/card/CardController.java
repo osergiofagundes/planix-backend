@@ -1,7 +1,7 @@
 package com.sergio.planix.card;
 
 import com.sergio.planix.card.dto.*;
-import com.sergio.planix.history.dto.CardChangeResponse;
+import com.sergio.planix.card.dto.CardChangeResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;

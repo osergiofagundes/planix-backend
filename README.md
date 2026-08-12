@@ -38,7 +38,7 @@ Copie `.env.example` para `.env` e troque o segredo. O `docker compose` lê esse
 cp .env.example .env          # no Windows: copy .env.example .env
 ```
 
-A API exige autenticação: comece por `POST /api/auth/register` e mande `Authorization: Bearer <accessToken>` nas demais chamadas. O roteiro completo está em `docs/api.http`.
+A API exige autenticação: comece por `POST /api/auth/register` e mande `Authorization: Bearer <accessToken>` nas demais chamadas. A referência completa dos endpoints é o [Scalar](#documentação-da-api).
 
 ## Produção
 
@@ -79,7 +79,11 @@ $env:SPRING_DATASOURCE_URL = "jdbc:postgresql://localhost:5434/planix"
 
 ## Documentação da API
 
-**http://localhost:8080/scalar**
+**http://localhost:8080/scalar** — gerado a partir das anotações dos
+controllers, então acompanha o código.
+
+Para trabalhar no código (arquitetura, convenções, como criar uma feature), veja
+[`CLAUDE.md`](CLAUDE.md) e [`docs/`](docs/README.md).
 
 ## Backup
 

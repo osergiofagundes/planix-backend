@@ -2,8 +2,8 @@ package com.sergio.planix.auth;
 
 import com.sergio.planix.auth.dto.EmailChangeRequest;
 import com.sergio.planix.auth.dto.PasswordChangeRequest;
-import com.sergio.planix.common.EmailAlreadyUsedException;
-import com.sergio.planix.common.InvalidFieldException;
+import com.sergio.planix.common.exception.EmailAlreadyUsedException;
+import com.sergio.planix.common.exception.InvalidFieldException;
 import com.sergio.planix.support.AuthenticatedIntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

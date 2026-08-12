@@ -5,7 +5,7 @@ import com.sergio.planix.card.Card;
 import com.sergio.planix.card.CardAccess;
 import com.sergio.planix.checklist.dto.ChecklistItemRequest;
 import com.sergio.planix.checklist.dto.ChecklistItemResponse;
-import com.sergio.planix.common.NotFoundException;
+import com.sergio.planix.common.exception.NotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

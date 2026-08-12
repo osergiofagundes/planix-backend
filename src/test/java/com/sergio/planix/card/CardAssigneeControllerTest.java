@@ -2,8 +2,8 @@ package com.sergio.planix.card;
 
 import com.sergio.planix.auth.CurrentUser;
 import com.sergio.planix.auth.JwtService;
-import com.sergio.planix.common.NotBoardMemberException;
-import com.sergio.planix.common.NotFoundException;
+import com.sergio.planix.common.exception.NotBoardMemberException;
+import com.sergio.planix.common.exception.NotFoundException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;

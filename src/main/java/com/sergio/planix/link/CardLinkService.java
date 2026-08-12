@@ -3,7 +3,7 @@ package com.sergio.planix.link;
 import com.sergio.planix.board.BoardAccess;
 import com.sergio.planix.card.Card;
 import com.sergio.planix.card.CardAccess;
-import com.sergio.planix.common.NotFoundException;
+import com.sergio.planix.common.exception.NotFoundException;
 import com.sergio.planix.link.dto.CardLinkRequest;
 import com.sergio.planix.link.dto.CardLinkResponse;
 import org.springframework.stereotype.Service;

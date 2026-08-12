@@ -2,7 +2,7 @@ package com.sergio.planix.profile;
 
 import com.sergio.planix.auth.CurrentUser;
 import com.sergio.planix.auth.JwtService;
-import com.sergio.planix.common.UnsupportedFileTypeException;
+import com.sergio.planix.common.exception.UnsupportedFileTypeException;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;

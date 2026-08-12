@@ -1,10 +1,10 @@
 package com.sergio.planix.auth;
 
 import com.sergio.planix.auth.dto.*;
-import com.sergio.planix.common.EmailAlreadyUsedException;
-import com.sergio.planix.common.InvalidCredentialsException;
-import com.sergio.planix.common.InvalidRefreshTokenException;
-import com.sergio.planix.common.NotFoundException;
+import com.sergio.planix.common.exception.EmailAlreadyUsedException;
+import com.sergio.planix.common.exception.InvalidCredentialsException;
+import com.sergio.planix.common.exception.InvalidRefreshTokenException;
+import com.sergio.planix.common.exception.NotFoundException;
 import com.sergio.planix.common.Tokens;
 import com.sergio.planix.team.TeamProvisioning;
 import org.springframework.beans.factory.annotation.Value;

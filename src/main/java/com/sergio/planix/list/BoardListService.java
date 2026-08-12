@@ -3,7 +3,7 @@ package com.sergio.planix.list;
 import com.sergio.planix.board.Board;
 import com.sergio.planix.board.BoardAccess;
 import com.sergio.planix.board.BoardRepository;
-import com.sergio.planix.common.NotFoundException;
+import com.sergio.planix.common.exception.NotFoundException;
 import com.sergio.planix.list.dto.BoardListRequest;
 import com.sergio.planix.list.dto.BoardListResponse;
 import org.springframework.stereotype.Service;

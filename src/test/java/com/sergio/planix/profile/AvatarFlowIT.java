@@ -1,6 +1,6 @@
 package com.sergio.planix.profile;
 
-import com.sergio.planix.common.UnsupportedFileTypeException;
+import com.sergio.planix.common.exception.UnsupportedFileTypeException;
 import com.sergio.planix.profile.dto.ProfileResponse;
 import com.sergio.planix.support.AuthenticatedIntegrationTest;
 import org.junit.jupiter.api.Test;
@@ -81,6 +81,6 @@ class AvatarFlowIT extends AuthenticatedIntegrationTest {
     @Test
     void avatarDeUsuarioSemFoto_da404() {
         assertThatThrownBy(() -> profileService.avatarOf(usuarioLogado.getId()))
-                .isInstanceOf(com.sergio.planix.common.NotFoundException.class);
+                .isInstanceOf(com.sergio.planix.common.exception.NotFoundException.class);
     }
 }

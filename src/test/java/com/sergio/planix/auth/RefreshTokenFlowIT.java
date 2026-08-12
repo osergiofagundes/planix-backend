@@ -2,7 +2,7 @@ package com.sergio.planix.auth;
 
 import com.sergio.planix.auth.dto.AuthResponse;
 import com.sergio.planix.auth.dto.RegisterRequest;
-import com.sergio.planix.common.InvalidRefreshTokenException;
+import com.sergio.planix.common.exception.InvalidRefreshTokenException;
 import com.sergio.planix.support.IntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

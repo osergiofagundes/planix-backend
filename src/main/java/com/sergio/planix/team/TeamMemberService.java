@@ -2,9 +2,9 @@ package com.sergio.planix.team;
 
 import com.sergio.planix.auth.CurrentUser;
 import com.sergio.planix.card.CardRepository;
-import com.sergio.planix.common.ForbiddenException;
-import com.sergio.planix.common.NotFoundException;
-import com.sergio.planix.member.BoardMemberRepository;
+import com.sergio.planix.common.exception.ForbiddenException;
+import com.sergio.planix.common.exception.NotFoundException;
+import com.sergio.planix.board.BoardMemberRepository;
 import com.sergio.planix.team.dto.TeamMemberResponse;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

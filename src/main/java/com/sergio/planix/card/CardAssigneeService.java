@@ -2,9 +2,7 @@ package com.sergio.planix.card;
 
 import com.sergio.planix.auth.CurrentUser;
 import com.sergio.planix.auth.UserRepository;
-import com.sergio.planix.common.NotBoardMemberException;
-import com.sergio.planix.history.CardChange;
-import com.sergio.planix.history.CardChangeRepository;
+import com.sergio.planix.common.exception.NotBoardMemberException;
 import com.sergio.planix.board.BoardAccess;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

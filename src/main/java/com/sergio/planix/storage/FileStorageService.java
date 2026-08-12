@@ -1,6 +1,6 @@
 package com.sergio.planix.storage;
 
-import com.sergio.planix.common.StorageException;
+import com.sergio.planix.common.exception.StorageException;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;

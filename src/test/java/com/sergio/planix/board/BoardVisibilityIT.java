@@ -6,12 +6,11 @@ import com.sergio.planix.board.dto.BoardResponse;
 import com.sergio.planix.card.CardAssigneeService;
 import com.sergio.planix.card.CardService;
 import com.sergio.planix.card.dto.CardCreateRequest;
-import com.sergio.planix.common.NotFoundException;
+import com.sergio.planix.common.exception.NotFoundException;
 import com.sergio.planix.invite.TeamInviteService;
 import com.sergio.planix.invite.dto.InviteRequest;
 import com.sergio.planix.list.BoardListService;
 import com.sergio.planix.list.dto.BoardListRequest;
-import com.sergio.planix.member.BoardMemberService;
 import com.sergio.planix.support.AuthenticatedIntegrationTest;
 import com.sergio.planix.team.TeamRole;
 import org.junit.jupiter.api.Test;
@@ -127,7 +126,7 @@ class BoardVisibilityIT extends AuthenticatedIntegrationTest {
         Long cartao = cardService.create(lista.id(), new CardCreateRequest("Fechar o balanço")).id();
 
         assertThatThrownBy(() -> assigneeService.assign(cartao, funcionario.getId()))
-                .isInstanceOf(com.sergio.planix.common.NotBoardMemberException.class);
+                .isInstanceOf(com.sergio.planix.common.exception.NotBoardMemberException.class);
 
         boardMemberService.add(quadro.id(), funcionario.getId());
         assigneeService.assign(cartao, funcionario.getId());

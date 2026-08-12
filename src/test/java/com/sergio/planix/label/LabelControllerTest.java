@@ -2,8 +2,8 @@ package com.sergio.planix.label;
 
 import com.sergio.planix.auth.CurrentUser;
 import com.sergio.planix.auth.JwtService;
-import com.sergio.planix.common.LabelNameAlreadyUsedException;
-import com.sergio.planix.common.NotFoundException;
+import com.sergio.planix.common.exception.LabelNameAlreadyUsedException;
+import com.sergio.planix.common.exception.NotFoundException;
 import com.sergio.planix.label.dto.LabelRequest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

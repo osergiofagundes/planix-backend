@@ -2,7 +2,7 @@ package com.sergio.planix.label;
 
 import com.sergio.planix.board.BoardService;
 import com.sergio.planix.board.dto.BoardResponse;
-import com.sergio.planix.common.LabelNameAlreadyUsedException;
+import com.sergio.planix.common.exception.LabelNameAlreadyUsedException;
 import com.sergio.planix.label.dto.LabelRequest;
 import com.sergio.planix.label.dto.LabelResponse;
 import com.sergio.planix.support.AuthenticatedIntegrationTest;

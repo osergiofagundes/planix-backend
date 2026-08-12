@@ -6,8 +6,8 @@ import com.sergio.planix.card.Card;
 import com.sergio.planix.card.CardAccess;
 import com.sergio.planix.comment.dto.CommentRequest;
 import com.sergio.planix.comment.dto.CommentResponse;
-import com.sergio.planix.common.ForbiddenException;
-import com.sergio.planix.common.NotFoundException;
+import com.sergio.planix.common.exception.ForbiddenException;
+import com.sergio.planix.common.exception.NotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 

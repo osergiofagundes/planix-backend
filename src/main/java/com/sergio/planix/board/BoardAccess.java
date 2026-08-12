@@ -1,8 +1,8 @@
 package com.sergio.planix.board;
 
 import com.sergio.planix.auth.CurrentUser;
-import com.sergio.planix.common.ForbiddenException;
-import com.sergio.planix.common.NotFoundException;
+import com.sergio.planix.common.exception.ForbiddenException;
+import com.sergio.planix.common.exception.NotFoundException;
 import org.springframework.stereotype.Component;
 
 @Component

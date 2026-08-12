@@ -1,6 +1,6 @@
 package com.sergio.planix.config;
 
-import com.sergio.planix.common.ApiError;
+import com.sergio.planix.common.dto.ApiError;
 import io.swagger.v3.core.converter.ModelConverters;
 import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;

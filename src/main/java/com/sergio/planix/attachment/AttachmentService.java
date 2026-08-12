@@ -5,7 +5,7 @@ import com.sergio.planix.auth.CurrentUser;
 import com.sergio.planix.board.BoardAccess;
 import com.sergio.planix.card.Card;
 import com.sergio.planix.card.CardAccess;
-import com.sergio.planix.common.NotFoundException;
+import com.sergio.planix.common.exception.NotFoundException;
 import com.sergio.planix.storage.FileStorageService;
 import com.sergio.planix.storage.StorageFolder;
 import org.springframework.stereotype.Service;

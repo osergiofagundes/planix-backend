@@ -1,7 +1,7 @@
 package com.sergio.planix.card;
 
 import com.sergio.planix.board.BoardAccess;
-import com.sergio.planix.common.NotFoundException;
+import com.sergio.planix.common.exception.NotFoundException;
 import org.springframework.stereotype.Component;
 
 @Component

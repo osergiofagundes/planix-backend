@@ -2,8 +2,8 @@ package com.sergio.planix.invite;
 
 import com.sergio.planix.auth.CurrentUser;
 import com.sergio.planix.auth.dto.UserSummary;
-import com.sergio.planix.common.ForbiddenException;
-import com.sergio.planix.common.NotFoundException;
+import com.sergio.planix.common.exception.ForbiddenException;
+import com.sergio.planix.common.exception.NotFoundException;
 import com.sergio.planix.common.Tokens;
 import com.sergio.planix.invite.dto.*;
 import com.sergio.planix.team.*;

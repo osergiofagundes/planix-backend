@@ -5,7 +5,7 @@ import com.sergio.planix.board.dto.BoardResponse;
 import com.sergio.planix.card.CardService;
 import com.sergio.planix.card.dto.CardCreateRequest;
 import com.sergio.planix.card.dto.CardResponse;
-import com.sergio.planix.common.NotFoundException;
+import com.sergio.planix.common.exception.NotFoundException;
 import com.sergio.planix.list.BoardListService;
 import com.sergio.planix.list.dto.BoardListRequest;
 import com.sergio.planix.list.dto.BoardListResponse;
