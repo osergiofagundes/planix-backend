@@ -69,6 +69,21 @@ public class GlobalExceptionHandler {
         return build(HttpStatus.CONFLICT, ex.getMessage(), req, null);
     }
 
+    @ExceptionHandler(TeamNotEmptyException.class)
+    public ResponseEntity<ApiError> handleTeamNotEmpty(TeamNotEmptyException ex, HttpServletRequest req) {
+        return build(HttpStatus.CONFLICT, ex.getMessage(), req, null);
+    }
+
+    @ExceptionHandler(NotTeamMemberException.class)
+    public ResponseEntity<ApiError> handleNotTeamMember(NotTeamMemberException ex, HttpServletRequest req) {
+        return build(HttpStatus.CONFLICT, ex.getMessage(), req, null);
+    }
+
+    @ExceptionHandler(BoardOpenToTeamException.class)
+    public ResponseEntity<ApiError> handleBoardOpenToTeam(BoardOpenToTeamException ex, HttpServletRequest req) {
+        return build(HttpStatus.CONFLICT, ex.getMessage(), req, null);
+    }
+
     @ExceptionHandler(StorageException.class)
     public ResponseEntity<ApiError> handleStorage(StorageException ex, HttpServletRequest req) {
         return build(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage(), req, null);

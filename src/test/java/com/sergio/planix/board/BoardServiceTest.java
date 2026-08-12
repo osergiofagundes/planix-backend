@@ -8,6 +8,9 @@ import com.sergio.planix.common.ForbiddenException;
 import com.sergio.planix.common.NotFoundException;
 import com.sergio.planix.list.BoardListRepository;
 import com.sergio.planix.member.BoardMemberRepository;
+import com.sergio.planix.team.Team;
+import com.sergio.planix.team.TeamAccess;
+import com.sergio.planix.team.TeamRepository;
 import org.junit.jupiter.api.Test;
 
 import java.util.Optional;
@@ -15,6 +18,7 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
 import static org.mockito.Mockito.*;
 
 class BoardServiceTest {
@@ -22,17 +26,24 @@ class BoardServiceTest {
     private final BoardRepository repo = mock(BoardRepository.class);
     private final BoardListRepository listRepo = mock(BoardListRepository.class);
     private final BoardMemberRepository memberRepo = mock(BoardMemberRepository.class);
+    private final TeamRepository teamRepo = mock(TeamRepository.class);
     private final UserRepository userRepo = mock(UserRepository.class);
     private final BoardAccess access = mock(BoardAccess.class);
+    private final TeamAccess teamAccess = mock(TeamAccess.class);
     private final CurrentUser currentUser = mock(CurrentUser.class);
-    private final BoardService service =
-            new BoardService(repo, listRepo, memberRepo, userRepo, access, currentUser);
+    private final BoardService service = new BoardService(repo, listRepo, memberRepo, teamRepo,
+            userRepo, access, teamAccess, currentUser);
 
     private static final User DONO = new User("Dono", "dono@planix.test", "hash");
+    private static final Team EQUIPE = new Team(DONO, "Acme", null, null);
+
+    private static Board quadro(String nome) {
+        return new Board(EQUIPE, DONO, nome, null, null, BoardVisibility.TEAM);
+    }
 
     @Test
     void excluirQuadroComConteudoSemConfirmacao_lancaExcecao() {
-        Board board = new Board(DONO, "Estudos", null, null);
+        Board board = quadro("Estudos");
         when(repo.findById(1L)).thenReturn(Optional.of(board));
         when(listRepo.existsByBoardId(1L)).thenReturn(true);
 
@@ -44,7 +55,7 @@ class BoardServiceTest {
 
     @Test
     void excluirQuadroComConteudoComNomeErrado_lancaExcecao() {
-        Board board = new Board(DONO, "Estudos", null, null);
+        Board board = quadro("Estudos");
         when(repo.findById(1L)).thenReturn(Optional.of(board));
         when(listRepo.existsByBoardId(1L)).thenReturn(true);
 
@@ -56,7 +67,7 @@ class BoardServiceTest {
 
     @Test
     void excluirQuadroComConteudoComNomeCorreto_apaga() {
-        Board board = new Board(DONO, "Estudos", null, null);
+        Board board = quadro("Estudos");
         when(repo.findById(1L)).thenReturn(Optional.of(board));
         when(listRepo.existsByBoardId(1L)).thenReturn(true);
 
@@ -67,7 +78,7 @@ class BoardServiceTest {
 
     @Test
     void excluirQuadroVazio_naoExigeConfirmacao() {
-        Board board = new Board(DONO, "Estudos", null, null);
+        Board board = quadro("Estudos");
         when(repo.findById(1L)).thenReturn(Optional.of(board));
         when(listRepo.existsByBoardId(1L)).thenReturn(false);
 
@@ -77,8 +88,8 @@ class BoardServiceTest {
     }
 
     @Test
-    void excluirQuadro_exigeSerODono() {
-        doThrow(new NotFoundException("Quadro 1 não encontrado")).when(access).requireOwner(1L);
+    void excluirQuadro_exigeAdministrarOQuadro() {
+        doThrow(new NotFoundException("Quadro 1 não encontrado")).when(access).requireManager(1L);
 
         assertThatThrownBy(() -> service.delete(1L, "Estudos"))
                 .isInstanceOf(NotFoundException.class);
@@ -87,10 +98,10 @@ class BoardServiceTest {
     }
 
     @Test
-    void transferirPosseParaQuemNaoEMembro_lancaNaoEncontrado() {
-        Board board = new Board(DONO, "Estudos", null, null);
+    void transferirPosseParaQuemNaoTemAcesso_lancaNaoEncontrado() {
+        Board board = quadro("Estudos");
         when(repo.findById(1L)).thenReturn(Optional.of(board));
-        when(memberRepo.existsByBoardIdAndUserId(1L, 99L)).thenReturn(false);
+        when(access.isMember(1L, 99L)).thenReturn(false);
 
         assertThatThrownBy(() -> service.transferOwnership(1L, 99L))
                 .isInstanceOf(NotFoundException.class);
@@ -99,22 +110,22 @@ class BoardServiceTest {
     }
 
     @Test
-    void transferirPosse_exigeSerODonoAtual() {
-        doThrow(new ForbiddenException("Apenas o dono do quadro pode fazer isto"))
-                .when(access).requireOwner(1L);
+    void transferirPosse_exigeAdministrarOQuadro() {
+        doThrow(new ForbiddenException("Apenas o dono do quadro ou quem administra a equipe pode fazer isto"))
+                .when(access).requireManager(1L);
 
         assertThatThrownBy(() -> service.transferOwnership(1L, 99L))
                 .isInstanceOf(ForbiddenException.class);
 
-        verify(memberRepo, never()).existsByBoardIdAndUserId(any(), any());
+        verify(access, never()).isMember(anyLong(), anyLong());
     }
 
     @Test
-    void transferirPosseParaMembro_trocaODono() {
-        Board board = new Board(DONO, "Estudos", null, null);
+    void transferirPosseParaQuemTemAcesso_trocaODono() {
+        Board board = quadro("Estudos");
         User novoDono = new User("Novo", "novo@planix.test", "hash");
         when(repo.findById(1L)).thenReturn(Optional.of(board));
-        when(memberRepo.existsByBoardIdAndUserId(1L, 2L)).thenReturn(true);
+        when(access.isMember(1L, 2L)).thenReturn(true);
         when(userRepo.getReferenceById(2L)).thenReturn(novoDono);
 
         service.transferOwnership(1L, 2L);

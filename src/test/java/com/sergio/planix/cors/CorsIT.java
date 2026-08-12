@@ -32,7 +32,9 @@ class CorsIT extends HttpIntegrationTest {
         mvc.perform(post("/api/boards").with(comToken(token))
                         .header(HttpHeaders.ORIGIN, ORIGEM_DO_VITE)
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content("{\"name\":\"Quadro do front\"}"))
+                        .content("""
+                                 {"teamId":%d,"name":"Quadro do front"}
+                                 """.formatted(equipePadrao(token))))
                 .andExpect(status().isCreated())
                 .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN, ORIGEM_DO_VITE))
                 .andExpect(header().string(HttpHeaders.ACCESS_CONTROL_EXPOSE_HEADERS,

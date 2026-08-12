@@ -23,4 +23,16 @@ public interface CardRepository extends JpaRepository<Card, Long> {
               and ca.user_id = :userId
             """, nativeQuery = true)
     int deleteAssigneesOfUserInBoard(@Param("boardId") Long boardId, @Param("userId") Long userId);
+
+    @Modifying
+    @Query(value = """
+            delete from card_assignees ca
+            using cards c, board_lists l, boards b
+            where ca.card_id = c.id
+              and c.list_id  = l.id
+              and l.board_id = b.id
+              and b.team_id  = :teamId
+              and ca.user_id = :userId
+            """, nativeQuery = true)
+    int deleteAssigneesOfUserInTeam(@Param("teamId") Long teamId, @Param("userId") Long userId);
 }

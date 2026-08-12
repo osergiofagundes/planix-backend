@@ -3,13 +3,12 @@ package com.sergio.planix.card;
 import com.sergio.planix.auth.User;
 import com.sergio.planix.auth.dto.UserSummary;
 import com.sergio.planix.board.BoardService;
-import com.sergio.planix.board.dto.BoardRequest;
 import com.sergio.planix.board.dto.BoardResponse;
 import com.sergio.planix.card.dto.CardCreateRequest;
 import com.sergio.planix.common.NotBoardMemberException;
 import com.sergio.planix.common.NotFoundException;
 import com.sergio.planix.history.dto.CardChangeResponse;
-import com.sergio.planix.invite.BoardInviteService;
+import com.sergio.planix.invite.TeamInviteService;
 import com.sergio.planix.invite.dto.InviteCreatedResponse;
 import com.sergio.planix.invite.dto.InviteRequest;
 import com.sergio.planix.list.BoardListService;
@@ -29,7 +28,7 @@ class CardAssigneeFlowIT extends AuthenticatedIntegrationTest {
     @Autowired BoardListService listService;
     @Autowired CardService cardService;
     @Autowired CardAssigneeService assigneeService;
-    @Autowired BoardInviteService inviteService;
+    @Autowired TeamInviteService inviteService;
 
     private Long cartaoDoQuadro(BoardResponse quadro, String titulo) {
         BoardListResponse lista = listService.create(quadro.id(), new BoardListRequest("A Fazer"));
@@ -37,7 +36,8 @@ class CardAssigneeFlowIT extends AuthenticatedIntegrationTest {
     }
 
     private User membroDoQuadro(BoardResponse quadro) {
-        InviteCreatedResponse convite = inviteService.create(quadro.id(), new InviteRequest(null, 1));
+        InviteCreatedResponse convite =
+                inviteService.create(quadro.teamId(), new InviteRequest(null, 1, null));
         User b = criarUsuario();
         autenticarComo(b);
         inviteService.accept(convite.token());
@@ -47,7 +47,7 @@ class CardAssigneeFlowIT extends AuthenticatedIntegrationTest {
 
     @Test
     void atribuirMembro_apareceNoCartaoParaOsDoisEEhIdempotente() {
-        BoardResponse quadro = boardService.create(new BoardRequest("Responsáveis", null));
+        BoardResponse quadro = boardService.create(quadroAberto("Responsáveis"));
         User b = membroDoQuadro(quadro);
         Long cartao = cartaoDoQuadro(quadro, "Comprar domínio");
 
@@ -66,7 +66,7 @@ class CardAssigneeFlowIT extends AuthenticatedIntegrationTest {
 
     @Test
     void atribuirEDesatribuir_deixamUmaLinhaDeHistoricoCadaUm() {
-        BoardResponse quadro = boardService.create(new BoardRequest("Histórico", null));
+        BoardResponse quadro = boardService.create(quadroAberto("Histórico"));
         User b = membroDoQuadro(quadro);
         Long cartao = cartaoDoQuadro(quadro, "Publicar site");
 
@@ -91,22 +91,22 @@ class CardAssigneeFlowIT extends AuthenticatedIntegrationTest {
 
     @Test
     void atribuirQuemNaoEMembro_ouIdQueNemExiste_daExatamenteAMesmaResposta() {
-        BoardResponse quadro = boardService.create(new BoardRequest("Fechado", null));
+        BoardResponse quadro = boardService.create(quadroAberto("Fechado"));
         Long cartao = cartaoDoQuadro(quadro, "Só para membros");
         User c = criarUsuario();
 
         assertThatThrownBy(() -> assigneeService.assign(cartao, c.getId()))
                 .isInstanceOf(NotBoardMemberException.class)
-                .hasMessage("O usuário %d não é membro deste quadro".formatted(c.getId()));
+                .hasMessage("O usuário %d não tem acesso a este quadro".formatted(c.getId()));
 
         assertThatThrownBy(() -> assigneeService.assign(cartao, 999_999L))
                 .isInstanceOf(NotBoardMemberException.class)
-                .hasMessage("O usuário 999999 não é membro deste quadro");
+                .hasMessage("O usuário 999999 não tem acesso a este quadro");
     }
 
     @Test
     void quemNaoEMembroDoQuadro_nemDescobreQueOCartaoExiste() {
-        BoardResponse quadro = boardService.create(new BoardRequest("Alheio", null));
+        BoardResponse quadro = boardService.create(quadroAberto("Alheio"));
         User b = membroDoQuadro(quadro);
         Long cartao = cartaoDoQuadro(quadro, "Cartão do A");
 
@@ -120,7 +120,7 @@ class CardAssigneeFlowIT extends AuthenticatedIntegrationTest {
 
     @Test
     void doisResponsaveisNoMesmoCartao_convivemESaemUmDeCadaVez() {
-        BoardResponse quadro = boardService.create(new BoardRequest("Dupla", null));
+        BoardResponse quadro = boardService.create(quadroAberto("Dupla"));
         User b = membroDoQuadro(quadro);
         Long cartao = cartaoDoQuadro(quadro, "Trabalho em dupla");
 

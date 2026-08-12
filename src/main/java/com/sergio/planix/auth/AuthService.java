@@ -6,6 +6,7 @@ import com.sergio.planix.common.InvalidCredentialsException;
 import com.sergio.planix.common.InvalidRefreshTokenException;
 import com.sergio.planix.common.NotFoundException;
 import com.sergio.planix.common.Tokens;
+import com.sergio.planix.team.TeamProvisioning;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -25,17 +26,20 @@ public class AuthService {
     private final PasswordEncoder encoder;
     private final JwtService jwtService;
     private final CurrentUser currentUser;
+    private final TeamProvisioning teams;
     private final Duration refreshTtl;
     private final String dummyHash;
 
     public AuthService(UserRepository userRepo, RefreshTokenRepository refreshRepo,
                        PasswordEncoder encoder, JwtService jwtService, CurrentUser currentUser,
+                       TeamProvisioning teams,
                        @Value("${planix.jwt.refresh-ttl}") Duration refreshTtl) {
         this.userRepo = userRepo;
         this.refreshRepo = refreshRepo;
         this.encoder = encoder;
         this.jwtService = jwtService;
         this.currentUser = currentUser;
+        this.teams = teams;
         this.refreshTtl = refreshTtl;
         this.dummyHash = encoder.encode(UUID.randomUUID().toString());
     }
@@ -46,6 +50,7 @@ public class AuthService {
             throw new EmailAlreadyUsedException("Já existe uma conta com o e-mail " + email);
         }
         User user = userRepo.save(new User(req.name(), email, encoder.encode(req.password())));
+        teams.createFirstTeamFor(user);
         return issueTokens(user);
     }
 

@@ -1,6 +1,5 @@
 package com.sergio.planix.board;
 
-import com.sergio.planix.board.dto.BoardRequest;
 import com.sergio.planix.board.dto.BoardResponse;
 import com.sergio.planix.common.BoardNotEmptyException;
 import com.sergio.planix.common.NotFoundException;
@@ -24,7 +23,7 @@ class BoardFlowIT extends AuthenticatedIntegrationTest {
 
     @Test
     void listasEntramNoFimEMovemComRenumeracao() {
-        BoardResponse board = boardService.create(new BoardRequest("Ordenação", null));
+        BoardResponse board = boardService.create(quadroAberto("Ordenação"));
 
         BoardListResponse aFazer = listService.create(board.id(), new BoardListRequest("A Fazer"));
         BoardListResponse fazendo = listService.create(board.id(), new BoardListRequest("Fazendo"));
@@ -46,7 +45,7 @@ class BoardFlowIT extends AuthenticatedIntegrationTest {
 
     @Test
     void excluirQuadroComConteudo_exigeNomeEDepoisCascateia() {
-        BoardResponse board = boardService.create(new BoardRequest("Projeto", "Quadro do teste"));
+        BoardResponse board = boardService.create(quadroAberto("Projeto", "Quadro do teste"));
         BoardListResponse lista = listService.create(board.id(), new BoardListRequest("A Fazer"));
 
         assertThatThrownBy(() -> boardService.delete(board.id(), null))
@@ -54,7 +53,7 @@ class BoardFlowIT extends AuthenticatedIntegrationTest {
 
         boardService.delete(board.id(), "Projeto");
 
-        assertThat(boardService.list()).extracting(BoardResponse::id).doesNotContain(board.id());
+        assertThat(boardService.list(null)).extracting(BoardResponse::id).doesNotContain(board.id());
         assertThatThrownBy(() -> listService.get(lista.id()))
                 .isInstanceOf(NotFoundException.class);
     }

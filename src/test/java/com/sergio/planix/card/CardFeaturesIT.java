@@ -1,7 +1,6 @@
 package com.sergio.planix.card;
 
 import com.sergio.planix.board.BoardService;
-import com.sergio.planix.board.dto.BoardRequest;
 import com.sergio.planix.board.dto.BoardResponse;
 import com.sergio.planix.card.dto.CardCreateRequest;
 import com.sergio.planix.card.dto.CardResponse;
@@ -37,7 +36,7 @@ class CardFeaturesIT extends AuthenticatedIntegrationTest {
 
     @Test
     void etiquetasAnexamDesanexamESaoRemovidasDosCartoesAoExcluir() {
-        BoardResponse board = boardService.create(new BoardRequest("Etiquetas", null));
+        BoardResponse board = boardService.create(quadroAberto("Etiquetas"));
         BoardListResponse lista = listService.create(board.id(), new BoardListRequest("A Fazer"));
         CardResponse card = cardService.create(lista.id(), new CardCreateRequest("Comprar domínio"));
 
@@ -64,7 +63,7 @@ class CardFeaturesIT extends AuthenticatedIntegrationTest {
 
     @Test
     void checklistAlternaFeitoEMantemAOrdemAoRemoverDoMeio() {
-        BoardResponse board = boardService.create(new BoardRequest("Checklist", null));
+        BoardResponse board = boardService.create(quadroAberto("Checklist"));
         BoardListResponse lista = listService.create(board.id(), new BoardListRequest("A Fazer"));
         CardResponse card = cardService.create(lista.id(), new CardCreateRequest("Publicar site"));
 
@@ -87,7 +86,7 @@ class CardFeaturesIT extends AuthenticatedIntegrationTest {
 
     @Test
     void comentarioELinkFicamLigadosAoCartao() {
-        BoardResponse board = boardService.create(new BoardRequest("Extras", null));
+        BoardResponse board = boardService.create(quadroAberto("Extras"));
         BoardListResponse lista = listService.create(board.id(), new BoardListRequest("A Fazer"));
         CardResponse card = cardService.create(lista.id(), new CardCreateRequest("Estudar JPA"));
 

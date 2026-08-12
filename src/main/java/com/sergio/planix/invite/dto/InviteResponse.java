@@ -1,6 +1,7 @@
 package com.sergio.planix.invite.dto;
 
-import com.sergio.planix.invite.BoardInvite;
+import com.sergio.planix.invite.TeamInvite;
+import com.sergio.planix.team.TeamRole;
 import io.swagger.v3.oas.annotations.media.Schema;
 
 import java.time.OffsetDateTime;
@@ -9,6 +10,7 @@ import java.time.OffsetDateTime;
                     + "resposta da criação.")
 public record InviteResponse(
         @Schema(description = "Id do convite", example = "600") Long id,
+        @Schema(description = "Papel com que quem aceitar entra na equipe") TeamRole role,
         @Schema(description = "Quantas pessoas já entraram por este link", example = "0") int uses,
         @Schema(description = "Limite de usos", example = "1") int maxUses,
         @Schema(description = "Quando o link deixa de valer", example = "2026-08-08T14:32:10.123-03:00")
@@ -20,8 +22,9 @@ public record InviteResponse(
         OffsetDateTime createdAt
 ) {
 
-    public static InviteResponse from(BoardInvite invite) {
-        return new InviteResponse(invite.getId(), invite.getUses(), invite.getMaxUses(),
-                invite.getExpiresAt(), invite.getRevokedAt(), invite.getCreatedAt());
+    public static InviteResponse from(TeamInvite invite) {
+        return new InviteResponse(invite.getId(), invite.getRole(), invite.getUses(),
+                invite.getMaxUses(), invite.getExpiresAt(), invite.getRevokedAt(),
+                invite.getCreatedAt());
     }
 }

@@ -1,14 +1,11 @@
 package com.sergio.planix.invite;
 
 import com.sergio.planix.auth.User;
-import com.sergio.planix.board.BoardService;
-import com.sergio.planix.board.dto.BoardRequest;
-import com.sergio.planix.board.dto.BoardResponse;
 import com.sergio.planix.common.NotFoundException;
 import com.sergio.planix.invite.dto.InviteCreatedResponse;
 import com.sergio.planix.invite.dto.InviteRequest;
-import com.sergio.planix.member.BoardMemberRepository;
 import com.sergio.planix.support.AuthenticatedIntegrationTest;
+import com.sergio.planix.team.TeamMemberRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -21,15 +18,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 class InviteConcurrencyIT extends AuthenticatedIntegrationTest {
 
-    @Autowired BoardService boardService;
-    @Autowired BoardInviteService inviteService;
-    @Autowired BoardInviteRepository inviteRepo;
-    @Autowired BoardMemberRepository memberRepo;
+    @Autowired TeamInviteService inviteService;
+    @Autowired TeamInviteRepository inviteRepo;
+    @Autowired TeamMemberRepository membroRepo;
 
     @Test
     void doisAcceptsSimultaneosNumConviteDeUmUso_apenasUmEntra() throws Exception {
-        BoardResponse quadro = boardService.create(new BoardRequest("Corrida", null));
-        InviteCreatedResponse convite = inviteService.create(quadro.id(), new InviteRequest(null, 1));
+        Long equipe = equipeDoTeste.getId();
+        InviteCreatedResponse convite = inviteService.create(equipe, new InviteRequest(null, 1, null));
 
         User b = criarUsuario();
         User c = criarUsuario();
@@ -64,7 +60,6 @@ class InviteConcurrencyIT extends AuthenticatedIntegrationTest {
         }
 
         assertThat(inviteRepo.findById(convite.id()).orElseThrow().getUses()).isEqualTo(1);
-        assertThat(memberRepo.findByBoardIdOrderByCreatedAtAsc(quadro.id()))
-                .hasSize(2);
+        assertThat(membroRepo.findByTeamIdOrderByCreatedAtAsc(equipe)).hasSize(2);
     }
 }

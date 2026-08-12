@@ -5,7 +5,7 @@ import com.sergio.planix.auth.UserRepository;
 import com.sergio.planix.common.NotBoardMemberException;
 import com.sergio.planix.history.CardChange;
 import com.sergio.planix.history.CardChangeRepository;
-import com.sergio.planix.member.BoardMemberRepository;
+import com.sergio.planix.board.BoardAccess;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,16 +16,16 @@ public class CardAssigneeService {
     private static final String CAMPO = "assignee";
 
     private final CardAccess cardAccess;
-    private final BoardMemberRepository memberRepo;
+    private final BoardAccess boardAccess;
     private final UserRepository userRepo;
     private final CardChangeRepository changeRepo;
     private final CurrentUser currentUser;
 
-    public CardAssigneeService(CardAccess cardAccess, BoardMemberRepository memberRepo,
+    public CardAssigneeService(CardAccess cardAccess, BoardAccess boardAccess,
                                UserRepository userRepo, CardChangeRepository changeRepo,
                                CurrentUser currentUser) {
         this.cardAccess = cardAccess;
-        this.memberRepo = memberRepo;
+        this.boardAccess = boardAccess;
         this.userRepo = userRepo;
         this.changeRepo = changeRepo;
         this.currentUser = currentUser;
@@ -35,9 +35,9 @@ public class CardAssigneeService {
         Card card = cardAccess.require(cardId);
         Long boardId = card.getList().getBoard().getId();
 
-        if (!memberRepo.existsByBoardIdAndUserId(boardId, userId)) {
+        if (!boardAccess.isMember(boardId, userId)) {
             throw new NotBoardMemberException(
-                    "O usuário %d não é membro deste quadro".formatted(userId));
+                    "O usuário %d não tem acesso a este quadro".formatted(userId));
         }
         if (card.getAssignees().add(userRepo.getReferenceById(userId))) {
             registrar(card, null, String.valueOf(userId));

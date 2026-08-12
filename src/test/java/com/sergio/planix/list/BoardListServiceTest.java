@@ -2,6 +2,8 @@ package com.sergio.planix.list;
 
 import com.sergio.planix.auth.User;
 import com.sergio.planix.board.Board;
+import com.sergio.planix.board.BoardVisibility;
+import com.sergio.planix.team.Team;
 import com.sergio.planix.board.BoardAccess;
 import com.sergio.planix.board.BoardRepository;
 import org.junit.jupiter.api.Test;
@@ -69,7 +71,9 @@ class BoardListServiceTest {
     }
 
     private static Board board() {
-        Board board = new Board(new User("Dono", "dono@planix.test", "hash"), "Quadro", null, null);
+        Board board = new Board(new Team(null, "Equipe", null, null),
+                new User("Dono", "dono@planix.test", "hash"), "Quadro", null, null,
+                BoardVisibility.TEAM);
         board.setId(1L);
         return board;
     }

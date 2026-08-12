@@ -2,6 +2,7 @@ package com.sergio.planix.board;
 
 import com.sergio.planix.auth.User;
 import com.sergio.planix.common.BaseEntity;
+import com.sergio.planix.team.Team;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -11,6 +12,10 @@ import lombok.Setter;
 @Getter
 @Setter
 public class Board extends BaseEntity {
+
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "team_id")
+    private Team team;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "owner_id")
@@ -25,12 +30,23 @@ public class Board extends BaseEntity {
     @Column(name = "icon", length = 50)
     private String icon;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, length = 20)
+    private BoardVisibility visibility;
+
     protected Board() {}
 
-    public Board(User owner, String name, String description, String icon) {
+    public Board(Team team, User owner, String name, String description, String icon,
+                 BoardVisibility visibility) {
+        this.team = team;
         this.owner = owner;
         this.name = name;
         this.description = description;
         this.icon = icon;
+        this.visibility = visibility;
+    }
+
+    public boolean isOpenToTeam() {
+        return visibility == BoardVisibility.TEAM;
     }
 }

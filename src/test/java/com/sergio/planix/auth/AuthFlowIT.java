@@ -1,7 +1,6 @@
 package com.sergio.planix.auth;
 
 import com.sergio.planix.board.BoardService;
-import com.sergio.planix.board.dto.BoardRequest;
 import com.sergio.planix.board.dto.BoardResponse;
 import com.sergio.planix.card.CardService;
 import com.sergio.planix.card.dto.CardCreateRequest;
@@ -25,20 +24,20 @@ class AuthFlowIT extends AuthenticatedIntegrationTest {
 
     @Test
     void quadroDeOutroUsuario_respondeNaoEncontrado() {
-        BoardResponse meuQuadro = boardService.create(new BoardRequest("Meu quadro", null));
+        BoardResponse meuQuadro = boardService.create(quadroAberto("Meu quadro"));
 
         autenticarComo(criarUsuario());
 
         assertThatThrownBy(() -> boardService.get(meuQuadro.id()))
                 .isInstanceOf(NotFoundException.class);
-        assertThat(boardService.list())
+        assertThat(boardService.list(null))
                 .extracting(BoardResponse::id)
                 .doesNotContain(meuQuadro.id());
     }
 
     @Test
     void cartaoDeOutroUsuario_respondeNaoEncontrado() {
-        BoardResponse quadro = boardService.create(new BoardRequest("Quadro do dono", null));
+        BoardResponse quadro = boardService.create(quadroAberto("Quadro do dono"));
         BoardListResponse lista = listService.create(quadro.id(), new BoardListRequest("A Fazer"));
         CardResponse cartao = cardService.create(lista.id(), new CardCreateRequest("Segredo"));
 
@@ -54,12 +53,13 @@ class AuthFlowIT extends AuthenticatedIntegrationTest {
 
     @Test
     void moverCartaoParaListaDeOutroUsuario_respondeNaoEncontrado() {
-        BoardResponse quadroDoOutro = boardService.create(new BoardRequest("Quadro do outro", null));
+        BoardResponse quadroDoOutro = boardService.create(quadroAberto("Quadro do outro"));
         BoardListResponse listaDoOutro =
                 listService.create(quadroDoOutro.id(), new BoardListRequest("Destino"));
 
-        autenticarComo(criarUsuario());
-        BoardResponse meuQuadro = boardService.create(new BoardRequest("Meu quadro", null));
+        User outro = criarUsuario();
+        autenticarComo(outro);
+        BoardResponse meuQuadro = boardService.create(quadroAbertoDe(outro, "Meu quadro"));
         BoardListResponse minhaLista = listService.create(meuQuadro.id(), new BoardListRequest("A Fazer"));
         CardResponse meuCartao = cardService.create(minhaLista.id(), new CardCreateRequest("Meu cartão"));
 

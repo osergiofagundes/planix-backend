@@ -27,8 +27,9 @@ class ApiErrorPathsIT extends HttpIntegrationTest {
 
     @Test
     void excluirQuadroComConteudoSemConfirmar_retorna409() throws Exception {
-        RequestPostProcessor token = comToken(tokenDeUsuarioNovo());
-        long quadroId = criarQuadroComUmaLista(token, "Projeto");
+        String bruto = tokenDeUsuarioNovo();
+        RequestPostProcessor token = comToken(bruto);
+        long quadroId = criarQuadroComUmaLista(bruto, "Projeto");
 
         mvc.perform(delete("/api/boards/" + quadroId).with(token))
                 .andExpect(status().isConflict())
@@ -38,8 +39,9 @@ class ApiErrorPathsIT extends HttpIntegrationTest {
 
     @Test
     void excluirQuadroComConteudoConfirmandoONome_retorna204() throws Exception {
-        RequestPostProcessor token = comToken(tokenDeUsuarioNovo());
-        long quadroId = criarQuadroComUmaLista(token, "Projeto");
+        String bruto = tokenDeUsuarioNovo();
+        RequestPostProcessor token = comToken(bruto);
+        long quadroId = criarQuadroComUmaLista(bruto, "Projeto");
 
         mvc.perform(delete("/api/boards/" + quadroId)
                         .param("confirmationName", "Projeto")
@@ -50,22 +52,13 @@ class ApiErrorPathsIT extends HttpIntegrationTest {
                 .andExpect(status().isNotFound());
     }
 
-    private long criarQuadroComUmaLista(RequestPostProcessor token, String nome) throws Exception {
-        String quadro = mvc.perform(post("/api/boards")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content("""
-                                 {"name":"%s"}
-                                 """.formatted(nome))
-                        .with(token))
-                .andExpect(status().isCreated())
-                .andReturn().getResponse().getContentAsString();
-
-        long quadroId = ((Number) JsonPath.read(quadro, "$.id")).longValue();
+    private long criarQuadroComUmaLista(String token, String nome) throws Exception {
+        long quadroId = criarQuadro(token, nome);
 
         mvc.perform(post("/api/boards/" + quadroId + "/lists")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"name\":\"A Fazer\"}")
-                        .with(token))
+                        .with(comToken(token)))
                 .andExpect(status().isCreated());
 
         return quadroId;

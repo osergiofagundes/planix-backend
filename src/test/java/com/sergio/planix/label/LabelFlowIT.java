@@ -1,7 +1,6 @@
 package com.sergio.planix.label;
 
 import com.sergio.planix.board.BoardService;
-import com.sergio.planix.board.dto.BoardRequest;
 import com.sergio.planix.board.dto.BoardResponse;
 import com.sergio.planix.common.LabelNameAlreadyUsedException;
 import com.sergio.planix.label.dto.LabelRequest;
@@ -20,7 +19,7 @@ class LabelFlowIT extends AuthenticatedIntegrationTest {
 
     @Test
     void duasEtiquetasComOMesmoNomeNoMesmoQuadro_naoPodem() {
-        BoardResponse quadro = boardService.create(new BoardRequest("Quadro", null));
+        BoardResponse quadro = boardService.create(quadroAberto("Quadro"));
         labelService.create(quadro.id(), new LabelRequest("Urgente", "vermelho"));
 
         assertThatThrownBy(() -> labelService.create(quadro.id(), new LabelRequest("Urgente", "azul")))
@@ -34,8 +33,8 @@ class LabelFlowIT extends AuthenticatedIntegrationTest {
 
     @Test
     void mesmoNomeEmQuadrosDiferentes_saoPermitidas() {
-        BoardResponse trabalho = boardService.create(new BoardRequest("Trabalho", null));
-        BoardResponse pessoal = boardService.create(new BoardRequest("Pessoal", null));
+        BoardResponse trabalho = boardService.create(quadroAberto("Trabalho"));
+        BoardResponse pessoal = boardService.create(quadroAberto("Pessoal"));
 
         labelService.create(trabalho.id(), new LabelRequest("Urgente", "vermelho"));
         labelService.create(pessoal.id(), new LabelRequest("Urgente", "vermelho"));

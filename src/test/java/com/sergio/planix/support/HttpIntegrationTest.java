@@ -8,10 +8,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
 import java.util.UUID;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -41,6 +43,29 @@ public abstract class HttpIntegrationTest extends IntegrationTest {
 
     protected static String emailUnico() {
         return "user-" + UUID.randomUUID() + "@planix.test";
+    }
+
+    protected int equipePadrao(String token) throws Exception {
+        return JsonPath.read(mvc.perform(get("/api/teams").with(comToken(token)))
+                .andExpect(status().isOk())
+                .andReturn().getResponse().getContentAsString(), "$[0].id");
+    }
+
+    protected int criarQuadro(String token, String nome) throws Exception {
+        return criarQuadro(token, nome, "TEAM");
+    }
+
+    protected int criarQuadro(String token, String nome, String visibilidade) throws Exception {
+        return idDe(mvc.perform(post("/api/boards").with(comToken(token))
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("""
+                                 {"teamId":%d,"name":"%s","visibility":"%s"}
+                                 """.formatted(equipePadrao(token), nome, visibilidade)))
+                .andExpect(status().isCreated()));
+    }
+
+    protected static int idDe(ResultActions resultado) throws Exception {
+        return JsonPath.read(resultado.andReturn().getResponse().getContentAsString(), "$.id");
     }
 
     protected static RequestPostProcessor comToken(String token) {

@@ -4,7 +4,6 @@ import com.jayway.jsonpath.JsonPath;
 import com.sergio.planix.support.HttpIntegrationTest;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
-import org.springframework.test.web.servlet.ResultActions;
 
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.not;
@@ -17,15 +16,16 @@ class CollaborationHttpIT extends HttpIntegrationTest {
     private static final MediaType JSON = MediaType.APPLICATION_JSON;
 
     @Test
-    void doConviteAoQuadroCompartilhado_comAsPortasCertasFechadas() throws Exception {
+    void doConviteDeEquipeAoQuadroCompartilhado_comAsPortasCertasFechadas() throws Exception {
         String a = tokenDeUsuarioNovo();
         String b = tokenDeUsuarioNovo();
         String c = tokenDeUsuarioNovo();
 
+        int equipe = equipePadrao(a);
         int quadro = criarQuadro(a, "Compartilhado");
 
         String convite = JsonPath.read(
-                mvc.perform(post("/api/boards/{id}/invites", quadro).with(comToken(a))
+                mvc.perform(post("/api/teams/{id}/invites", equipe).with(comToken(a))
                                 .contentType(JSON).content("{\"maxUses\":1}"))
                         .andExpect(status().isCreated())
                         .andExpect(jsonPath("$.token").isNotEmpty())
@@ -33,10 +33,11 @@ class CollaborationHttpIT extends HttpIntegrationTest {
                         .andReturn().getResponse().getContentAsString(),
                 "$.token");
 
-        mvc.perform(get("/api/boards/{id}/invites", quadro).with(comToken(a)))
+        mvc.perform(get("/api/teams/{id}/invites", equipe).with(comToken(a)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].uses").value(0))
                 .andExpect(jsonPath("$[0].maxUses").value(1))
+                .andExpect(jsonPath("$[0].role").value("MEMBER"))
                 .andExpect(jsonPath("$[0].token").doesNotExist());
 
         mvc.perform(get("/api/boards/{id}", quadro).with(comToken(b)))
@@ -45,13 +46,14 @@ class CollaborationHttpIT extends HttpIntegrationTest {
         mvc.perform(post("/api/invites/preview").with(comToken(b)).contentType(JSON)
                         .content(corpoDoToken(convite)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.boardName").value("Compartilhado"))
+                .andExpect(jsonPath("$.teamName").isNotEmpty())
                 .andExpect(jsonPath("$.invitedBy.id").exists());
 
         mvc.perform(post("/api/invites/accept").with(comToken(b)).contentType(JSON)
                         .content(corpoDoToken(convite)))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.id").value(quadro));
+                .andExpect(jsonPath("$.id").value(equipe))
+                .andExpect(jsonPath("$.myRole").value("MEMBER"));
 
         mvc.perform(get("/api/boards").with(comToken(b)))
                 .andExpect(status().isOk())
@@ -74,7 +76,7 @@ class CollaborationHttpIT extends HttpIntegrationTest {
                 .andExpect(jsonPath("$.message").exists());
         mvc.perform(delete("/api/boards/{id}", quadro).with(comToken(b)))
                 .andExpect(status().isForbidden());
-        mvc.perform(post("/api/boards/{id}/invites", quadro).with(comToken(b))
+        mvc.perform(post("/api/teams/{id}/invites", equipe).with(comToken(b))
                         .contentType(JSON).content("{}"))
                 .andExpect(status().isForbidden());
 
@@ -88,11 +90,54 @@ class CollaborationHttpIT extends HttpIntegrationTest {
                 .andExpect(jsonPath("$.length()").value(2));
 
         mvc.perform(delete("/api/boards/{id}/members/me", quadro).with(comToken(b)))
+                .andExpect(status().isConflict());
+        mvc.perform(delete("/api/teams/{id}/members/me", equipe).with(comToken(b)))
                 .andExpect(status().isNoContent());
         mvc.perform(get("/api/boards").with(comToken(b)))
                 .andExpect(jsonPath("$[*].id", not(hasItem(quadro))));
-        mvc.perform(delete("/api/boards/{id}/members/me", quadro).with(comToken(a)))
+        mvc.perform(delete("/api/teams/{id}/members/me", equipe).with(comToken(a)))
                 .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void quadroFechado_soAbreParaQuemODonoAdiciona() throws Exception {
+        String a = tokenDeUsuarioNovo();
+        String b = tokenDeUsuarioNovo();
+
+        int equipe = equipePadrao(a);
+        int quadroAberto = criarQuadro(a, "Comercial");
+        int quadroFechado = criarQuadro(a, "Diretoria", "RESTRICTED");
+
+        String convite = JsonPath.read(
+                mvc.perform(post("/api/teams/{id}/invites", equipe).with(comToken(a))
+                                .contentType(JSON).content("{\"maxUses\":1}"))
+                        .andReturn().getResponse().getContentAsString(), "$.token");
+        mvc.perform(post("/api/invites/accept").with(comToken(b)).contentType(JSON)
+                        .content(corpoDoToken(convite)))
+                .andExpect(status().isOk());
+
+        mvc.perform(get("/api/boards").with(comToken(b)))
+                .andExpect(jsonPath("$[*].id", hasItem(quadroAberto)))
+                .andExpect(jsonPath("$[*].id", not(hasItem(quadroFechado))));
+
+        int idDoB = JsonPath.read(mvc.perform(get("/api/auth/me").with(comToken(b)))
+                .andReturn().getResponse().getContentAsString(), "$.id");
+
+        mvc.perform(get("/api/boards/{id}/members/candidates", quadroFechado).with(comToken(a)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[*].id", hasItem(idDoB)));
+
+        mvc.perform(post("/api/boards/{id}/members", quadroFechado).with(comToken(a))
+                        .contentType(JSON).content("{\"userId\":%d}".formatted(idDoB)))
+                .andExpect(status().isOk());
+
+        mvc.perform(get("/api/boards").with(comToken(b)))
+                .andExpect(jsonPath("$[*].id", hasItem(quadroFechado)));
+
+        mvc.perform(delete("/api/boards/{id}/members/{userId}", quadroFechado, idDoB).with(comToken(a)))
+                .andExpect(status().isNoContent());
+        mvc.perform(get("/api/boards/{id}", quadroFechado).with(comToken(b)))
+                .andExpect(status().isNotFound());
     }
 
     @Test
@@ -110,16 +155,6 @@ class CollaborationHttpIT extends HttpIntegrationTest {
                         .contentType(JSON).content("{\"token\":\"\"}"))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.fieldErrors.token").exists());
-    }
-
-    private int criarQuadro(String token, String nome) throws Exception {
-        return idDe(mvc.perform(post("/api/boards").with(comToken(token))
-                        .contentType(JSON).content("{\"name\":\"%s\"}".formatted(nome)))
-                .andExpect(status().isCreated()));
-    }
-
-    private static int idDe(ResultActions resultado) throws Exception {
-        return JsonPath.read(resultado.andReturn().getResponse().getContentAsString(), "$.id");
     }
 
     private static String corpoDoToken(String token) {

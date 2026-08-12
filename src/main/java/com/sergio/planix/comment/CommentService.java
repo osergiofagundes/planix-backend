@@ -54,7 +54,7 @@ public class CommentService {
     public void delete(Long id) {
         Comment comment = findOrThrow(id);
         if (!isAuthor(comment)) {
-            boardAccess.requireOwner(comment.getCard().getList().getBoard().getId());
+            boardAccess.requireManager(comment.getCard().getList().getBoard().getId());
         }
         repo.delete(comment);
     }

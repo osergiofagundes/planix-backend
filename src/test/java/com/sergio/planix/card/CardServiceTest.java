@@ -3,6 +3,8 @@ package com.sergio.planix.card;
 import com.sergio.planix.auth.CurrentUser;
 import com.sergio.planix.auth.User;
 import com.sergio.planix.board.Board;
+import com.sergio.planix.board.BoardVisibility;
+import com.sergio.planix.team.Team;
 import com.sergio.planix.board.BoardAccess;
 import com.sergio.planix.card.dto.CardUpdateRequest;
 import com.sergio.planix.common.CrossBoardMoveException;
@@ -115,7 +117,9 @@ class CardServiceTest {
     }
 
     private static Board board(Long id) {
-        Board board = new Board(new User("Dono", "dono@planix.test", "hash"), "Quadro", null, null);
+        Board board = new Board(new Team(null, "Equipe", null, null),
+                new User("Dono", "dono@planix.test", "hash"), "Quadro", null, null,
+                BoardVisibility.TEAM);
         board.setId(id);
         return board;
     }

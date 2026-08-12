@@ -8,13 +8,13 @@ import org.springframework.data.repository.query.Param;
 import java.util.List;
 import java.util.Optional;
 
-public interface BoardInviteRepository extends JpaRepository<BoardInvite, Long> {
+public interface TeamInviteRepository extends JpaRepository<TeamInvite, Long> {
 
-    Optional<BoardInvite> findByTokenHash(String tokenHash);
+    Optional<TeamInvite> findByTokenHash(String tokenHash);
 
-    List<BoardInvite> findByBoardIdOrderByCreatedAtDesc(Long boardId);
+    List<TeamInvite> findByTeamIdOrderByCreatedAtDesc(Long teamId);
 
     @Modifying
-    @Query("update BoardInvite i set i.uses = i.uses + 1 where i.id = :id and i.uses < i.maxUses")
+    @Query("update TeamInvite i set i.uses = i.uses + 1 where i.id = :id and i.uses < i.maxUses")
     int consume(@Param("id") Long id);
 }

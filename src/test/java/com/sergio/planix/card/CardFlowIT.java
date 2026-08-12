@@ -1,7 +1,6 @@
 package com.sergio.planix.card;
 
 import com.sergio.planix.board.BoardService;
-import com.sergio.planix.board.dto.BoardRequest;
 import com.sergio.planix.board.dto.BoardResponse;
 import com.sergio.planix.card.dto.CardCreateRequest;
 import com.sergio.planix.card.dto.CardResponse;
@@ -27,7 +26,7 @@ class CardFlowIT extends AuthenticatedIntegrationTest {
 
     @Test
     void moverCartaoEntreListas_renumeraAsDuasERegistraNoHistorico() {
-        BoardResponse board = boardService.create(new BoardRequest("Cartões", null));
+        BoardResponse board = boardService.create(quadroAberto("Cartões"));
         BoardListResponse aFazer = listService.create(board.id(), new BoardListRequest("A Fazer"));
         BoardListResponse fazendo = listService.create(board.id(), new BoardListRequest("Fazendo"));
 
@@ -53,7 +52,7 @@ class CardFlowIT extends AuthenticatedIntegrationTest {
 
     @Test
     void moverDentroDaMesmaLista_naoDuplicaPositions() {
-        BoardResponse board = boardService.create(new BoardRequest("Mesma lista", null));
+        BoardResponse board = boardService.create(quadroAberto("Mesma lista"));
         BoardListResponse lista = listService.create(board.id(), new BoardListRequest("A Fazer"));
 
         CardResponse c1 = cardService.create(lista.id(), new CardCreateRequest("Um"));
@@ -72,7 +71,7 @@ class CardFlowIT extends AuthenticatedIntegrationTest {
 
     @Test
     void historicoRegistraSoOQueMudou_eConclusaoGravaCompletedAt() {
-        BoardResponse board = boardService.create(new BoardRequest("Histórico", null));
+        BoardResponse board = boardService.create(quadroAberto("Histórico"));
         BoardListResponse lista = listService.create(board.id(), new BoardListRequest("A Fazer"));
         CardResponse card = cardService.create(lista.id(), new CardCreateRequest("Comprar domínio"));
 
@@ -95,7 +94,7 @@ class CardFlowIT extends AuthenticatedIntegrationTest {
 
     @Test
     void excluirCartaoDoMeio_mantemAOrdemContigua() {
-        BoardResponse board = boardService.create(new BoardRequest("Exclusão", null));
+        BoardResponse board = boardService.create(quadroAberto("Exclusão"));
         BoardListResponse lista = listService.create(board.id(), new BoardListRequest("A Fazer"));
 
         cardService.create(lista.id(), new CardCreateRequest("Um"));
