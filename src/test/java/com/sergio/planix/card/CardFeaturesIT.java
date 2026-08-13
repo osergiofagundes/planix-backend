@@ -90,7 +90,7 @@ class CardFeaturesIT extends AuthenticatedIntegrationTest {
         BoardListResponse lista = listService.create(board.id(), new BoardListRequest("A Fazer"));
         CardResponse card = cardService.create(lista.id(), new CardCreateRequest("Estudar JPA"));
 
-        commentService.create(card.id(), new CommentRequest("Começar pelo capítulo de mapeamentos"));
+        commentService.create(card.id(), new CommentRequest("Começar pelo capítulo de mapeamentos", null));
         linkService.create(card.id(), new CardLinkRequest("https://spring.io/projects/spring-data-jpa", "Docs"));
 
         assertThat(commentService.listByCard(card.id())).hasSize(1);

@@ -7,6 +7,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.OffsetDateTime;
+
 @Entity
 @Table(name = "comments")
 @Getter
@@ -21,14 +23,26 @@ public class Comment extends BaseEntity {
     @JoinColumn(name = "user_id")
     private User author;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_id")
+    private Comment parent;
+
     @Column(nullable = false, columnDefinition = "text")
     private String text;
 
+    @Column(name = "deleted_at")
+    private OffsetDateTime deletedAt;
+
     protected Comment() {}
 
-    public Comment(Card card, User author, String text) {
+    public Comment(Card card, User author, String text, Comment parent) {
         this.card = card;
         this.author = author;
         this.text = text;
+        this.parent = parent;
+    }
+
+    public boolean isDeleted() {
+        return deletedAt != null;
     }
 }
