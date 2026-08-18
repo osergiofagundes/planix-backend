@@ -22,12 +22,19 @@ JUnit 5 + Testcontainers.
 ```
 
 ```powershell
-.\scripts\dev-up.ps1 -d    # stack de dev: API em 8081, banco em 5434
-.\scripts\dev-down.ps1     # derruba só o dev; a produção segue no ar
+.\scripts\dev-up.ps1 -d       # stack de dev: API em 8081, banco em 5434
+.\scripts\dev-down.ps1        # derruba só o dev; a produção segue no ar
+.\scripts\seed-uploads.ps1    # arquivos de anexo/avatar que o seed referencia
+.\scripts\seed-reset.ps1      # repopula o banco de dev (apaga tudo antes)
 ```
 
+O stack de dev sobe com o profile `dev`, que liga o seed de
+`db/seed/R__seed_dev.sql` — 12 usuários (senha `senha123`), 4 equipes, 11
+quadros e ~220 cartões. Produção e testes não enxergam essa pasta. Detalhes em
+[`docs/BANCO-DE-DADOS.md`](docs/BANCO-DE-DADOS.md#seed-de-desenvolvimento).
+
 **Antes de dar qualquer coisa por pronta:** `./mvnw clean verify` precisa passar.
-A linha de base é **34 testes no Surefire e 125 no Failsafe, 0 falhas**. São os
+A linha de base é **38 testes no Surefire e 135 no Failsafe, 0 falhas**. São os
 `*IT` que exercitam os endpoints de ponta a ponta, então `./mvnw test` sozinho
 não prova nada sobre HTTP.
 

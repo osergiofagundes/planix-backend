@@ -12,6 +12,9 @@ services:
     environment:
       SPRING_DOCKER_COMPOSE_ENABLED: "false"
       SPRING_DEVTOOLS_RESTART_ENABLED: "true"
+      # Liga o db/seed/ no Flyway. O seed APAGA o banco de dev e o repovoa —
+      # veja o cabecalho do R__seed_dev.sql. Producao nao define esta variavel.
+      SPRING_PROFILES_ACTIVE: "dev"
     ports: !override
       - "127.0.0.1:8081:8080"                # 8080 e da producao
     restart: "no"

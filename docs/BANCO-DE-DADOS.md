@@ -165,3 +165,121 @@ estão comentadas no fim do próprio script.
 
 Nos testes o banco é descartável: cada execução sobe um `postgres:18` em
 Testcontainers e roda as migrations do zero. Ver [TESTES.md](TESTES.md).
+
+## Seed de desenvolvimento
+
+O banco de dev nasce vazio, e banco vazio não exercita nada: não tem lista
+longa, cartão vencido, thread de comentário nem quadro restrito. O seed enche
+esse banco com um mundo inteiro — 12 pessoas, 4 equipes, 11 quadros, ~220
+cartões, ~350 comentários, checklists, etiquetas, anexos e histórico.
+
+```
+src/main/resources/db/
+  migration/          schema — produção, dev e Testcontainers
+  seed/
+    R__seed_dev.sql   dados — só sob o profile dev
+```
+
+**O seed não é uma migration de schema.** Ele mora em `db/seed/`, pasta que só
+entra no `spring.flyway.locations` quando o profile `dev` está ativo — veja
+`application-dev.properties`. Produção não ativa profile nenhum (confira o
+`compose.yaml`) e os testes de integração também não, então nenhum dos dois
+enxerga o arquivo. A regra de "migration aplicada nunca é editada" continua
+valendo para tudo que está em `migration/`; o seed é `R__` justamente porque
+foi feito para ser reescrito.
+
+### Como rodar
+
+```powershell
+.\scripts\seed-uploads.ps1   # gera os arquivos de anexo e avatar (uma vez)
+.\scripts\dev-up.ps1 -d      # o Flyway aplica o seed no boot
+```
+
+O `compose.dev.yaml` define `SPRING_PROFILES_ACTIVE=dev`, então **subir o stack
+de dev já popula o banco**. O log da aplicação termina com o resumo:
+
+```
+DB: SEED DEV aplicado. Senha de todos os usuarios: senha123
+DB:   usuarios=12 redes=20 equipes=4 membros_equipe=17 convites=4
+DB:   quadros=11 membros_quadro=34 listas=42 etiquetas=73
+...
+```
+
+Rodando a aplicação fora do Docker, ative o profile na mão:
+
+```powershell
+.\mvnw spring-boot:run "-Dspring-boot.run.profiles=dev"
+```
+
+O `application-dev.properties` aponta o datasource para a **5434** de propósito:
+o default do `application.properties` é a 5433 — produção —, e o seed começa com
+`TRUNCATE`. Esta é a salvaguarda que impede o acidente óbvio; ela não protege
+quem sobrescrever a URL na mão.
+
+### Como recarregar
+
+Sendo `R__`, o Flyway só reaplica quando o **checksum do arquivo muda**. Editou
+o seed? Basta reiniciar. Quer o mesmo seed de novo, do zero?
+
+```powershell
+.\scripts\seed-reset.ps1
+```
+
+Ele apaga a linha do `R__seed_dev.sql` no `flyway_schema_history` e reinicia a
+aplicação — o Flyway então vê um repeatable inédito e roda outra vez.
+
+### Credenciais
+
+Todos os 12 usuários usam a senha **`senha123`**. O hash sai do próprio
+Postgres via `pgcrypto` (`crypt(…, gen_salt('bf', 10))` produz o mesmo `$2a$10$`
+do `BCryptPasswordEncoder`), então não há constante mágica no arquivo.
+
+| E-mail | Papel no mundo do seed |
+|---|---|
+| `sergio@gmail.com` | OWNER do Núcleo de Produto, ADMIN do Estúdio Aurora, MEMBER de Ops & Infra — vê quase tudo |
+| `ana.souza@planix.dev` | OWNER do Estúdio Aurora |
+| `bruno.lima@planix.dev` | ADMIN do Núcleo de Produto, dono de "Bugs e Incidentes" |
+| `carla.mendes@planix.dev` | ADMIN do Estúdio Aurora, dona do "Design System" |
+| `diego.rocha@planix.dev` | OWNER de Ops & Infra |
+| `elisa.prado@planix.dev`, `felipe.antunes@planix.dev`, `gabriela.dias@planix.dev`, `henrique.matos@planix.dev` | MEMBER, com combinações diferentes de quadro |
+| `isabela.nunes@planix.dev` | **perfil vazio** — sem bio, telefone ou endereço |
+| `joao.pereira@planix.dev` | **só tem a própria equipe** — o caso de quem acabou de se cadastrar |
+| `lara.figueiredo@planix.dev` | MEMBER do Estúdio Aurora |
+
+Os convites cobrem os quatro estados, e o token viaja em claro na URL — o banco
+guarda só o SHA-256. Os tokens do seed:
+
+| Token | Equipe | Estado |
+|---|---|---|
+| `convite-nucleo-de-produto` | Núcleo de Produto | **ativo** (3 de 25 usos) |
+| `convite-estudio-aurora` | Estúdio Aurora | esgotado (5 de 5) |
+| `convite-ops-expirado` | Ops & Infra | expirado |
+| `convite-ops-revogado` | Ops & Infra | revogado |
+
+Para exercitar o fluxo de aceite: entre como `joao.pereira@planix.dev` e use o
+token ativo.
+
+### Casos de borda plantados de propósito
+
+- **"Ideias Soltas"** — quadro sem nenhuma lista.
+- **"Design System" → "Implementação"** — lista sem nenhum cartão.
+- **"Roadmap 2026" → "Backlog"** — 22 cartões, para scroll e paginação.
+- Três quadros **`RESTRICTED`**, invisíveis para quem não está em `board_members`.
+- Cartões vencidos, vencendo hoje, futuros e sem prazo; ~30% concluídos.
+- Comentários apagados (`deleted_at`), respostas e reações.
+
+### Duas invariantes que o seed respeita
+
+O seed insere direto no banco, sem passar pelos services — então ele precisa
+manter na mão o que a API mantém sozinha:
+
+1. **`position` começa em 0 e não tem buraco.** Toda inserção em massa tira a
+   posição de `row_number() OVER (PARTITION BY pai ORDER BY …) - 1`, nunca do
+   índice bruto da série.
+2. **Coerência de escopo.** Responsável de cartão é sempre membro do quadro,
+   etiqueta é sempre do quadro do cartão, resposta fica sempre no cartão da
+   raiz e nunca passa de dois níveis.
+
+Não há `random()` em lugar nenhum: a variação vem de aritmética sobre o índice,
+então duas execuções geram os mesmos dados. A única exceção é o salt do bcrypt,
+aleatório por definição — o hash muda a cada rodada, a senha não.
