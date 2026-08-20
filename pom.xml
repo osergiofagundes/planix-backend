@@ -139,6 +139,15 @@
 			<artifactId>springdoc-openapi-starter-webmvc-scalar</artifactId>
 			<version>${springdoc.version}</version>
 		</dependency>
+		<!--
+			Produtor do topico planix.notifications.v1. Nao entra na suite de testes: quem
+			grava o evento e o NotificationPublisher, que so escreve na outbox. Os *IT
+			continuam subindo so o Postgres do Testcontainers.
+		-->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-kafka</artifactId>
+		</dependency>
 	</dependencies>
 
 	<build>

@@ -34,6 +34,9 @@ services:
       # Mesmo principio do WeakKeyException do jjwt: melhor falhar na subida do que rodar com o
       # segredo que esta publicado no repositorio.
       PLANIX_JWT_SECRET: ${PLANIX_JWT_SECRET:?defina esta variavel (veja o .env.example)}
+      # O broker vive no stack do ../planix-realtime, que sobe DEPOIS deste (ele consome a
+      # planix-net como external). Ate la o relay so acumula na outbox, sem quebrar nada.
+      PLANIX_KAFKA_SERVERS: kafka:9092
     ports:
       # Em producao o navegador NAO usa esta porta: o nginx do frontend faz
       # proxy de /api. Ela fica publicada so para o Scalar (/scalar) e para

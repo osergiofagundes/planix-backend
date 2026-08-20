@@ -34,7 +34,7 @@ quadros e ~220 cartões. Produção e testes não enxergam essa pasta. Detalhes 
 [`docs/BANCO-DE-DADOS.md`](docs/BANCO-DE-DADOS.md#seed-de-desenvolvimento).
 
 **Antes de dar qualquer coisa por pronta:** `./mvnw clean verify` precisa passar.
-A linha de base é **38 testes no Surefire e 135 no Failsafe, 0 falhas**. São os
+A linha de base é **41 testes no Surefire e 167 no Failsafe, 0 falhas**. São os
 `*IT` que exercitam os endpoints de ponta a ponta, então `./mvnw test` sozinho
 não prova nada sobre HTTP.
 
@@ -61,6 +61,7 @@ label/       etiquetas do quadro
 team/        equipe, membros, papéis e provisionamento da primeira equipe
 invite/      convites por link para entrar numa equipe
 profile/     perfil público do usuário, avatar e redes sociais
+notification/ eventos derivados de outros domínios: outbox, relay e prazos
 storage/     gravação de arquivo em disco (usado por anexo e avatar)
 common/      BaseEntity, Tokens, dto/ (ApiError, MoveRequest), exception/
 config/      Security, OpenAPI, Storage, JpaAuditing
@@ -112,6 +113,8 @@ Controller ──▶ Service ──▶ Access ──▶ Repository ──▶ Ent
    em português, no formato `cenario_resultadoEsperado`.
 8. **Comentário explica *por quê*, não *o quê*.** O código já diz o que faz. Se
    não há nada não-óbvio a explicar, não comente.
+9. **Nunca execute `git commit` nem `git push`.** Termine a tarefa, deixe
+   as alterações prontas na árvore de trabalho e pare aí.
 
 ## Onde olhar
 

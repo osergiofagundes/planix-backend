@@ -10,6 +10,7 @@ import com.sergio.planix.common.exception.NotFoundException;
 import com.sergio.planix.card.dto.CardChangeResponse;
 import com.sergio.planix.list.BoardList;
 import com.sergio.planix.list.BoardListRepository;
+import com.sergio.planix.notification.NotificationPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,16 +30,19 @@ public class CardService {
     private final CardAccess cardAccess;
     private final BoardAccess boardAccess;
     private final CurrentUser currentUser;
+    private final NotificationPublisher notifications;
 
     public CardService(CardRepository cardRepo, BoardListRepository listRepo,
                        CardChangeRepository changeRepo, CardAccess cardAccess,
-                       BoardAccess boardAccess, CurrentUser currentUser) {
+                       BoardAccess boardAccess, CurrentUser currentUser,
+                       NotificationPublisher notifications) {
         this.cardRepo = cardRepo;
         this.listRepo = listRepo;
         this.changeRepo = changeRepo;
         this.cardAccess = cardAccess;
         this.boardAccess = boardAccess;
         this.currentUser = currentUser;
+        this.notifications = notifications;
     }
 
     @Transactional(readOnly = true)
@@ -107,11 +111,13 @@ public class CardService {
                 throw new CrossBoardMoveException(
                         "A lista de destino precisa pertencer ao mesmo quadro do cartão");
             }
+            String fromList = card.getList().getName();
             changeRepo.save(new CardChange(card, currentUser.reference(), "list_id",
                     String.valueOf(sourceListId), String.valueOf(targetListId)));
             card.setList(target);
             cardRepo.flush();
             reindex(sourceListId, cardId);
+            notifications.cardMoved(card, fromList, target.getName());
         }
         insertAt(card, targetListId, newPosition);
     }

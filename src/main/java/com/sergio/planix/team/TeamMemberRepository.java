@@ -35,4 +35,12 @@ public interface TeamMemberRepository extends JpaRepository<TeamMember, Long> {
             group by m.team.id
             """)
     List<TeamCount> countMembersByTeam(@Param("teamIds") Collection<Long> teamIds);
+
+    @Query("""
+            select m.user.id from TeamMember m
+            where m.team.id = :teamId
+              and m.role in (com.sergio.planix.team.TeamRole.OWNER,
+                             com.sergio.planix.team.TeamRole.ADMIN)
+            """)
+    List<Long> findManagerIds(@Param("teamId") Long teamId);
 }

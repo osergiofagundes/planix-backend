@@ -11,6 +11,7 @@ import com.sergio.planix.comment.dto.CommentResponse;
 import com.sergio.planix.common.exception.CommentDeletedException;
 import com.sergio.planix.common.exception.ForbiddenException;
 import com.sergio.planix.common.exception.NotFoundException;
+import com.sergio.planix.notification.NotificationPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -32,14 +33,17 @@ public class CommentService {
     private final CardAccess cardAccess;
     private final BoardAccess boardAccess;
     private final CurrentUser currentUser;
+    private final NotificationPublisher notifications;
 
     public CommentService(CommentRepository repo, CommentReactionRepository reactionRepo,
-                          CardAccess cardAccess, BoardAccess boardAccess, CurrentUser currentUser) {
+                          CardAccess cardAccess, BoardAccess boardAccess, CurrentUser currentUser,
+                          NotificationPublisher notifications) {
         this.repo = repo;
         this.reactionRepo = reactionRepo;
         this.cardAccess = cardAccess;
         this.boardAccess = boardAccess;
         this.currentUser = currentUser;
+        this.notifications = notifications;
     }
 
     @Transactional(readOnly = true)
@@ -69,8 +73,11 @@ public class CommentService {
 
     public CommentResponse create(Long cardId, CommentRequest req) {
         Card card = cardAccess.require(cardId);
-        return CommentResponse.from(
-                repo.save(new Comment(card, currentUser.reference(), req.text(), threadRoot(cardId, req.parentId()))));
+        Comment comment = repo.save(
+                new Comment(card, currentUser.reference(), req.text(), threadRoot(cardId, req.parentId())));
+
+        notifications.cardCommented(card, req.text());
+        return CommentResponse.from(comment);
     }
 
     public CommentResponse update(Long id, CommentRequest req) {

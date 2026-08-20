@@ -6,6 +6,7 @@ import com.sergio.planix.common.exception.ForbiddenException;
 import com.sergio.planix.common.exception.NotFoundException;
 import com.sergio.planix.common.Tokens;
 import com.sergio.planix.invite.dto.*;
+import com.sergio.planix.notification.NotificationPublisher;
 import com.sergio.planix.team.*;
 import com.sergio.planix.team.dto.TeamResponse;
 import org.springframework.stereotype.Service;
@@ -27,16 +28,19 @@ public class TeamInviteService {
     private final TeamAccess access;
     private final TeamResponses responses;
     private final CurrentUser currentUser;
+    private final NotificationPublisher notifications;
 
     public TeamInviteService(TeamInviteRepository repo, TeamRepository teamRepo,
                              TeamMemberRepository memberRepo, TeamAccess access,
-                             TeamResponses responses, CurrentUser currentUser) {
+                             TeamResponses responses, CurrentUser currentUser,
+                             NotificationPublisher notifications) {
         this.repo = repo;
         this.teamRepo = teamRepo;
         this.memberRepo = memberRepo;
         this.access = access;
         this.responses = responses;
         this.currentUser = currentUser;
+        this.notifications = notifications;
     }
 
     public InviteCreatedResponse create(Long teamId, InviteRequest req) {
@@ -96,6 +100,7 @@ public class TeamInviteService {
             throw invalido();
         }
         memberRepo.save(new TeamMember(team, currentUser.reference(), invite.getRole()));
+        notifications.teamMemberJoined(team);
         return responses.of(team, invite.getRole());
     }
 

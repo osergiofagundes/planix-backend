@@ -1,0 +1,11 @@
+{
+  "eventId": "9f1c2d3e-4a5b-4c7d-8e9f-0a1b2c3d4e5f",
+  "type": "CARD_MOVED",
+  "occurredAt": "2026-08-13T14:22:05Z",
+  "recipients": [12, 15, 31],
+  "actor": { "id": 7, "name": "Sérgio", "avatarUrl": "/api/users/7/avatar" },
+  "board": { "id": 4, "name": "Sprint 12" },
+  "card": { "id": 88, "name": "Ajustar filtro de cards" },
+  "team": null,
+  "data": { "fromList": "Fazendo", "toList": "Revisão" }
+}

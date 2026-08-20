@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
+import java.time.OffsetDateTime;
 import java.util.List;
 
 public interface CardRepository extends JpaRepository<Card, Long> {
@@ -35,4 +36,21 @@ public interface CardRepository extends JpaRepository<Card, Long> {
               and ca.user_id = :userId
             """, nativeQuery = true)
     int deleteAssigneesOfUserInTeam(@Param("teamId") Long teamId, @Param("userId") Long userId);
+
+    @Query("select u.id from Card c join c.assignees u where c.id = :cardId")
+    List<Long> findAssigneeIds(@Param("cardId") Long cardId);
+
+    @Query("""
+            select c from Card c
+            where c.completed = false and c.dueDate is not null
+              and c.dueDate > :agora and c.dueDate <= :limite
+            """)
+    List<Card> findComPrazoProximo(@Param("agora") OffsetDateTime agora,
+                                   @Param("limite") OffsetDateTime limite);
+
+    @Query("""
+            select c from Card c
+            where c.completed = false and c.dueDate is not null and c.dueDate <= :agora
+            """)
+    List<Card> findVencidos(@Param("agora") OffsetDateTime agora);
 }

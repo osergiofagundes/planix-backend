@@ -4,6 +4,7 @@ import com.sergio.planix.auth.CurrentUser;
 import com.sergio.planix.auth.UserRepository;
 import com.sergio.planix.common.exception.NotBoardMemberException;
 import com.sergio.planix.board.BoardAccess;
+import com.sergio.planix.notification.NotificationPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,15 +19,17 @@ public class CardAssigneeService {
     private final UserRepository userRepo;
     private final CardChangeRepository changeRepo;
     private final CurrentUser currentUser;
+    private final NotificationPublisher notifications;
 
     public CardAssigneeService(CardAccess cardAccess, BoardAccess boardAccess,
                                UserRepository userRepo, CardChangeRepository changeRepo,
-                               CurrentUser currentUser) {
+                               CurrentUser currentUser, NotificationPublisher notifications) {
         this.cardAccess = cardAccess;
         this.boardAccess = boardAccess;
         this.userRepo = userRepo;
         this.changeRepo = changeRepo;
         this.currentUser = currentUser;
+        this.notifications = notifications;
     }
 
     public void assign(Long cardId, Long userId) {
@@ -39,6 +42,7 @@ public class CardAssigneeService {
         }
         if (card.getAssignees().add(userRepo.getReferenceById(userId))) {
             registrar(card, null, String.valueOf(userId));
+            notifications.cardAssigned(card, userId);
         }
     }
 

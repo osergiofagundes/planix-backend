@@ -12,6 +12,7 @@ import com.sergio.planix.card.CardChange;
 import com.sergio.planix.card.CardChangeRepository;
 import com.sergio.planix.list.BoardList;
 import com.sergio.planix.list.BoardListRepository;
+import com.sergio.planix.notification.NotificationPublisher;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -31,8 +32,9 @@ class CardServiceTest {
     private final CardAccess cardAccess = mock(CardAccess.class);
     private final BoardAccess boardAccess = mock(BoardAccess.class);
     private final CurrentUser currentUser = mock(CurrentUser.class);
+    private final NotificationPublisher notifications = mock(NotificationPublisher.class);
     private final CardService service = new CardService(
-            cardRepo, listRepo, changeRepo, cardAccess, boardAccess, currentUser);
+            cardRepo, listRepo, changeRepo, cardAccess, boardAccess, currentUser, notifications);
 
     @Test
     void atualizarComOsMesmosValores_naoGeraHistorico() {
